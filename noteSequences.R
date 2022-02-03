@@ -1,12 +1,11 @@
-library( stringr )
-library( collections )
+pacman::p_load(stringr, collections)
 
 # Read the note table
-song.df <- read.csv( "JavaSparrow_UnitTable.csv", header=TRUE )
+song.df <- read.csv( "~/Dropbox (The University of Manchester)/FINAL FILES/20210303/Cleaned Files/UnitTable_20201122_Cleaned2.csv", header=TRUE )
 summary( song.df )
 
 # Drop everything but file and note
-small.df <- subset( song.df, TRUE, select=c("sound.files","note_label") )
+small.df <- subset(song.df, subset = TRUE, select=c("sound.files","note_label") )
 head( small.df )
 
 # Give the notes shorter names: we do this with a dictionary (a.k.a. a hashmap)
