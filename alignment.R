@@ -122,7 +122,7 @@ head( seq.df )
 
 #Now we are ready to do some alignments
 
-#try some distance matrices
+#try some distance matrices then alignment algorithms
 
 
 
