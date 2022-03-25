@@ -7,16 +7,25 @@ rm( list=ls() ) # wipe the slate clean
 
 library( stringr ) # str_c()
 library( collections ) # dict()
+library(birdsong.tools)
 
 ################################################################
 # Read Becky's unit table, then drop unnecessary columns
 ################################################################
 song.df <- read.csv( "~/Dropbox (The University of Manchester)/Java_Sparrow_Temporal/Lewisetal2021_UnitTable2_Tempo.csv", header=TRUE )
 summary( song.df )
+song.df <- dplyr::rename(song.df, Bird.ID = song_individual)
+metadata = read.csv("~/Dropbox (The University of Manchester)/FINAL FILES/20210303/Cleaned Files/Final/Lewisetal2021_metadata.csv")
+#issue with add_metadata (can't tolerate single column)
+song.df <- birdsong.tools::add_metadata(song.df, metadata, cols = c(5,6))
+
+data = tibble::tibble(Bird.ID = c("JS001", "JS002"),a = c(1,2), b = c(1,2))
+metadata2 = tibble::tibble(Bird.ID = c("JS001", "JS002"), x= c(3,4), y = c(5,6), z = c(7,8))
+add_metadata(data,metadata2, cols = 3)
 
 # Drop everything but file and note
-small.df <- subset( song.df, TRUE, select=c("sound.files","note_label") )
-names(small.df ) <- c( "sound.file","note.label" )
+small.df <- subset( song.df, TRUE, select=c("sound.files","note_label","Clutch") )
+names(small.df ) <- c( "sound.file","note.label","clutch" )
 head(small.df )
 
 ################################################################
@@ -44,6 +53,11 @@ count.df$note.char <- sapply(count.df$note.label,
 
 count.df
 
+#plot bar chart of general note usage
+library(ggplot2)
+ggplot2::ggplot(data = count.df, aes(y = n.occurrences, x = note.label)) +
+  geom_bar(stat = "identity")
+
 # Tranlate note names in the main data frame
 small.df$note.char <- sapply( small.df$note.label, 
                               function(str) { note.to.char$get(str) }
@@ -60,11 +74,11 @@ head( small.df )
 
 #aggregate splits data by sound.file, then takes all the note.char and collapse
 #them into a string
-seq.df <- aggregate( note.char ~ sound.file, 
+seq.df <- aggregate( note.char ~ sound.file + clutch, 
                      FUN=function(c) { str_c(c, sep="", collapse="") }, 
                      data=small.df)
 
-names( seq.df ) <- c( "sound.file", "note.seq")
+names( seq.df ) <- c( "sound.file","clutch", "note.seq")
 head( seq.df )
 
 ################################################################
@@ -120,10 +134,147 @@ seq.df$rec.num <- recordingNums
 seq.df$rec.date <- recordingDates
 head( seq.df )
 
-#Now we are ready to do some alignments
+################################################################
+#   Blap everything out to files
+################################################################
+
+write.csv( count.df, "NoteNames.csv", row.names=FALSE )
+write.csv( seq.df, "NoteSequences.csv", row.names=FALSE )
+
+################################################################
+#   Do some EDA ----
+################################################################
+library(gplots)
+# Look at note usage in the sense of raw note count
+note.count.mat <- xtabs( ~ Bird.ID + note_label, data=song.df )
+pdf( "NoteUsageCountHeatmap.pdf", height=210/25.4, width=297/25.4 )
+heatmap.2( 
+  t(note.count.mat), 
+  col=terrain.colors(256), trace="none",
+  main="Number of notes recorded",
+  key.title="Key", key.xlab="Notes recorded",
+  margins=c(4,7)
+)
+dev.off()
+
+#Turn counts into proportions because some birds might just sing more notes. 
+
+# Compute the fraction of each bird,s notes that are of each type
+notes.per.bird <- rowSums( note.count.mat )
+#compute proportions
+note.prop.mat <- diag( 1.0 / notes.per.bird ) %*% note.count.mat 
+rownames( note.prop.mat ) <- rownames( note.count.mat ) # Names seem to get lost
+rowSums(note.prop.mat ) # Should all be 1.0
+
+# Plot new heatmap based on proportions
+pdf( "NoteUsageProportionHeatmap.pdf", height=210/25.4, width=297/25.4 )
+heatmap.2( 
+  t(note.prop.mat), 
+  col=terrain.colors(256), trace="none",
+  main="Proportion of notes recorded (per bird)",
+  key.title="Key", key.xlab="Proportion of notes",
+  margins=c(4,7)
+)
+dev.off()
+
+#generate colors for each clutch variable
+clutches = unique(seq.df$clutch)
+clutch_cols = rainbow(length(clutches))
+clutchd <- dict(clutch_cols, clutches)
+
+clutchd$get("A")
+
+x_colors = sapply(rownames(note.prop.mat), function(x){
+  #find the clutch of each individual
+  clutch = metadata[which(metadata$Bird.ID == x),]$Clutch
+  #find the color for the given clutch
+  clutchd$get(clutch)
+})
+
+pdf( "NoteUsageProportionHeatmap.pdf", height=210/25.4, width=297/25.4 )
+heatmap.2( 
+  t(note.prop.mat), 
+  col=terrain.colors(256), trace="none",
+  main="Proportion of notes recorded (per bird)",
+  key.title="Key", key.xlab="Proportion of notes",
+  margins=c(4,7), 
+  colCol = x_colors
+)
+dev.off()
+
+#number of notes
+seq.df[1,]$note.seq %>% nchar()
+
+seq.df <- seq.df %>% 
+  dplyr::mutate(num_notes = nchar(note.seq))
+
+#histogram of note number per sequence
+ggplot2::ggplot(seq.df, aes(num_notes)) + 
+  geom_histogram(bins = 10)
+
+#ggplot heatmap example
+
+m <- matrix(rnorm(400), ncol=40)
+sample.types <- c(rep("Blue", 10), rep("Green", 10), rep("Red", 10), rep("Purple", 10))
+
+library(gplots)
+heatmap.2(m, trace="none", colCol = sample.types)
+
+# Dummy data
+x <- LETTERS[1:20]
+y <- paste0("var", seq(1,20))
+data <- expand.grid(X=x, Y=y)
+data$Z <- runif(400, 0, 5)
+data$class <- sample(c("A","B"),20,replace = T)
+
+# Heatmap 
+ggplot(data, aes(X, Y, fill= Z)) + 
+  geom_tile()
+##Alignments ----
+
+#Compute pairwise distances between sequences
+
+# library(alakazam)
+# 
+# pairwiseDist(c(A="ATGGC", B="ATGGG", C="ATGGG", D="AT--C"), 
+#              #need an input distance matrix to show closeness of different individual elements
+#              dist_mat=getDNAMatrix(gap=0))
+# 
+# #Try out some classic alignment algorithms (e.g. Needleman Wunsch)
+# 
+# #check by hand
+# 
+# head(seq.df)
+# dist(seq.df)
+# 
+# #Now we are ready to do some alignments
+# 
+# #examples seqs
+# ex_songs = seq.df$note.seq[1:5]
+# pairwiseDist(ex_songs)
+# 
+# ##edit distances
+# library(stringdist)
+# stringdist(ex_songs[1], ex_songs[2], method = 'lv')
+# 
+# 
+# d <- stringdistmatrix(c('foo','bar','boo','baz'))
+# # try 
+# plot(hclust(d))
+# 
+# stringdistmatrix(c("foo","bar","boo"),c("foo","bar","boo"))
+
+
+#need to add gaps in before we can compute differences
 
 #try some distance matrices then alignment algorithms
 
+#steps to do
+
+#1. Compute edit distances (don't need alignment I think)
+#2. attempt to align character strings using basic alignment algorithnms
+#3. Do pairwise distances based on alignments
+#4. Substitution models and compute likelihoods of trees
 
 
-
+#Alignment helps us to identify point mutations and indels
