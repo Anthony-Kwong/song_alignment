@@ -1,0 +1,17 @@
+Repository for song alignment project. 
+
+Aim: Align song sequences from a captive population of Java Sparrows. The tool will be applied to compare changes in 
+song characteristics when certain notes change. 
+
+explore.R: Generates heatmap of note usage for every bird. 
+
+alignment.R : First attempt at drawing alignments. Script turns every song into a sequence of notes. Output a table
+with the recording, bird ID, clutch, note sequence, recording number and recording date. Also produces a heatmap for 
+proportional note usage for every bird. 
+
+edit_distances.R : First attempt at computing edit distances between note sequences. 
+
+noteSequences.R : Script to turn songs into a sequence of notes. (Duplicate of a part of alignment.R)
+
+
+

@@ -138,8 +138,8 @@ head( seq.df )
 #   Blap everything out to files
 ################################################################
 
-write.csv( count.df, "NoteNames.csv", row.names=FALSE )
-write.csv( seq.df, "NoteSequences.csv", row.names=FALSE )
+write.csv( count.df, "./data/NoteNames.csv", row.names=FALSE )
+write.csv( seq.df, "./data/NoteSequences.csv", row.names=FALSE )
 
 ################################################################
 #   Do some EDA ----
