@@ -17,11 +17,12 @@ dist_mat <- stringdistmatrix(ex_songs, ex_songs,
 #we can look at within individual distance, take the mean of intra distances
 birds = unique(seq.df$bird.num)
 
+#compute mean of the pairwise differences within recordings of the same bird
 intra_dist = sapply(birds, function(ID){
   #filter data by bird
   fil_data = seq.df %>%
     dplyr::filter(bird.num == ID)
-  #compute distances between the songs from each individual
+  #compute distances between the songs from each individual, distance is levenstein
   dist_mat <- stringdistmatrix(fil_data$note.seq, fil_data$note.seq, method = "lv")
   #calculate mean distances
   mean_dist <- mean(dist_mat[lower.tri(dist_mat)])
@@ -44,7 +45,7 @@ ops <- attributes(match_info)$trafos
 
 #create a function to compute likelihood using the number of steps D,S,I
 
-#having a play rn, will make this a fct on a separate script
+#having a play rn, will make this a fct on a separate script ----
 
 op = "SMMSMMMIIIIMMMIMIMMMIMMMMMMMMMMM"
 res = sapply(c("D","S","I"), function(x){stringr::str_count(op,x)})
@@ -59,7 +60,7 @@ pair_loglik = Nd*log(lambda[1]) + Ns*log(lambda[2]) + Ni*log(lambda[3]) +
   log(Nd) - log(Ns) - log(Ni) - 
   (sum(lambda))*L
 
-#need to check model theory, step by step33
+#need to check model theory with mark, step by step33
 
 
 #distances between individuals (alakazam method)----

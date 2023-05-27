@@ -13,5 +13,7 @@ edit_distances.R : First attempt at computing edit distances between note sequen
 
 noteSequences.R : Script to turn songs into a sequence of notes. (Duplicate of a part of alignment.R)
 
+gibbs_align.R : Implement Gibb's aligner.
+
 
 
