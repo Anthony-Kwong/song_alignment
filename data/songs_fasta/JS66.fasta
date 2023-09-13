@@ -1,0 +1,16 @@
+>seq1
+--DDE-----------------AABBAB-ABBBBBBBBBBBBBA-
+>seq2
+----AAABBABBBBBBBBBBA-A---ABBAB------------B-
+>seq3
+---D------------------AABBAB-ABBBBBBBBBBBBBB-
+>seq4
+----------------------AABBAB-ABBBBBBBBBBBBBB-
+>seq5
+----------------------A---ABBABBBBBBBBBBBBBB-
+>seq6
+----------------------A---ABBABBBBBBBBBBB--B-
+>seq7
+----------------------A---ABBABBBBBBBBBB---B-
+>seq8
+---D------------------A---ABBABBBBBBBBB----A-

@@ -15,17 +15,17 @@ library(birdsong.tools)
 song.df <- read.csv( "~/Dropbox (The University of Manchester)/Java_Sparrow_Temporal/Lewisetal2021_UnitTable2_Tempo.csv", header=TRUE )
 summary( song.df )
 song.df <- dplyr::rename(song.df, Bird.ID = song_individual)
-metadata = read.csv("~/Dropbox (The University of Manchester)/FINAL FILES/20210303/Cleaned Files/Final/Lewisetal2021_metadata.csv")
+meta.data=read.csv("~/Dropbox (The University of Manchester)/FINAL FILES/20210303/Files for Anthony/JavaSparrow_Metadata.csv")
 #issue with add_metadata (can't tolerate single column)
-song.df <- birdsong.tools::add_metadata(song.df, metadata, cols = c(5,6))
+song.df <- birdsong.tools::add_metadata(song.df, meta.data, cols = c(5,6))
 
 data = tibble::tibble(Bird.ID = c("JS001", "JS002"),a = c(1,2), b = c(1,2))
 metadata2 = tibble::tibble(Bird.ID = c("JS001", "JS002"), x= c(3,4), y = c(5,6), z = c(7,8))
 add_metadata(data,metadata2, cols = 3)
 
 # Drop everything but file and note
-small.df <- subset( song.df, TRUE, select=c("sound.files","note_label","Clutch") )
-names(small.df ) <- c( "sound.file","note.label","clutch" )
+small.df <- subset( song.df, TRUE, select=c("sound.files","note_label","Clutch", "Bird.ID") )
+names(small.df ) <- c( "sound.file","note.label","clutch","Bird.ID")
 head(small.df )
 
 ################################################################
@@ -103,6 +103,15 @@ birdNums <- vapply( fnameTokenList,
                     USE.NAMES=FALSE
 )
 
+singer = vapply( fnameTokenList, 
+                 function(tokens){
+                   birdStr <- tokens[1]
+                   return( birdStr )
+                 }, 
+                 FUN.VALUE=c(birdNum="string"), # Specify the return type
+                 USE.NAMES=FALSE
+)
+
 # Get a string representing the date
 recordingDates <- vapply( fnameTokenList, 
                           function(tokens){
@@ -132,7 +141,11 @@ recordingNums <- vapply( fnameTokenList,
 seq.df$bird.num <- birdNums
 seq.df$rec.num <- recordingNums
 seq.df$rec.date <- recordingDates
+seq.df$Bird.ID <- singer
 head( seq.df )
+
+#insert line info
+seq.df = add_metadata(seq.df, meta.data, cols = c(5:9))
 
 ################################################################
 #   Blap everything out to files

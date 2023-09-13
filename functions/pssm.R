@@ -78,7 +78,9 @@ output = pssm(B, bpdf)
 
 q = matrix((1+1)/(2+1*2), ncol = 4, nrow = 2)
 p = matrix(0.5, ncol = 4, nrow = 2)
-expect_equal(output, q/p)
+ans = q/p
+rownames(ans) = c("A","B")
+expect_equal(output, ans)
 
 
 #test2
@@ -103,5 +105,7 @@ q3 = (3+b)/(k + b*sigma_size)
 
 q = as.matrix(cbind(c(q2,q1,q0), c(q0,q2,q1), c(q2,q1,q0), c(q2,q1,q0), c(q0,q0,q3) ))
 p = matrix(c(0.4, 1/3, 4/15), ncol = 5, nrow = 3)
-expect_equal(output, q/p)
+ans = q/p
+rownames(ans) = c("A","B","C")
+expect_equal(output, ans)
 

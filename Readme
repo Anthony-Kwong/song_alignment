@@ -11,9 +11,15 @@ proportional note usage for every bird.
 
 edit_distances.R : First attempt at computing edit distances between note sequences. 
 
+gibbs_align.R : Implement Gibb's aligner.
+
+line_align.R : Align songs from the same line, generate fasta files and plot the alignment
+
 noteSequences.R : Script to turn songs into a sequence of notes. (Duplicate of a part of alignment.R)
 
-gibbs_align.R : Implement Gibb's aligner.
+song2plot.R : Align individual birds, generate fasta and plot. 
+
+seq_evo.R : First attempt at modelling sequence evolution using the PHMM results. 
 
 
 

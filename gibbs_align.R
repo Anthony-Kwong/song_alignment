@@ -2,9 +2,15 @@
 
 #example sequences
 
-data = c("CCCCCCAAABBAAACCCCC", "DDDDDDAAABBAAADDDDDD", "EEEEEEEAAABBAAAEEEEEEE")
+data =  c("CCCCCCAAABBAAACCCCC", "DDDDDDAAABBAAADDDDDD", "AAAAAAAAAAAABBAAAAAAAAAAA", "BBBBBBBBAAABBAAABBBBBBB", "CCCCCCAAABBAAACCCCC", "DDDDDDAAABBAAADDDDDD", "AAAAAAAAAAAABBAAAAAAAAAAA", "BBBBBBBBAAABBAAABBBBBBB")
 w = 4
+
 #Gibbs aligner----
+
+#run dependencies
+source("./functions/bck_pdf.R")
+source("./functions/pssm.R")
+source("./functions/opmf.R")
 
 #input: 
 #t:A vector of character strings, w: integer for the length of motif to discover
@@ -49,7 +55,7 @@ gibbs_align = function(t, w){
   deltaP = 900
   
   #keep searching until P converges
-  while( deltaP > 1e-99){
+  while( deltaP > .Machine$double.xmin){
     #initialise offset pmf
     pmf = tibble::tibble(o = c(0, seq(n_star-w)), prob = NA)
     #get pmf of offset values o
@@ -79,8 +85,39 @@ gibbs_align = function(t, w){
   
   #compute final A
   final_A = rbind(t_star[(ostar+1):(ostar+w)], A)
-  return(final_A)
+  
+  #compute score
+  rows = nrow(final_A)
+  #compute scores for each row in final_A
+  scores = sapply(seq(rows), function(i){
+    s = rep(NA,w)
+    al = final_A[i,]
+    for(i in 1:w){
+      l = al[i]
+      p_index = which(rownames(P)==l)
+      s[i] = log(P[p_index,i]) #check the log trick that mark suggested later
+    }
+    rowscore = sum(s)
+    return(rowscore)
+  })
+  #total score
+  final_score = sum(scores)
+  
+  res = list(A= final_A, score = final_score)
+  
+  return(res)
 }
 
-gibbs_align(data, w = 8)
+# gibbs_align(data, w = 8)
+# 
+# al_res = list(NA)
+# for(k in 1:100){
+#   al_res[[k]] = gibbs_align(data, w = 8)
+# }
+# 
+# scores = sapply(al_res, function(tab){
+#   tab[2]
+# })
 
+
+#if the motif is too short and there's not that many sequences, it struggles
