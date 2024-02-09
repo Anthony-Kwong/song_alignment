@@ -7,6 +7,15 @@ library("ggmsa")
 bird_songs = readr::read_csv("./data/NoteSequences.csv")
 lines = unique(bird_songs$Line)
 
+#check number of recordings for every bird
+bird = unique(bird_songs$Bird.ID)
+k = sapply(bird, function(b){
+  d = bird_songs %>%
+    dplyr::filter(Bird.ID == b)
+  nrow(d)
+})
+
+#alignment code starts here
 for(i in 1:length(lines)){
   print(i)
   filtered_bird = bird_songs %>%

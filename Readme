@@ -7,7 +7,7 @@ explore.R: Generates heatmap of note usage for every bird.
 
 alignment.R : First attempt at drawing alignments. Script turns every song into a sequence of notes. Output a table
 with the recording, bird ID, clutch, note sequence, recording number and recording date. Also produces a heatmap for 
-proportional note usage for every bird. 
+proportional note usage for every bird. Output NoteSequences.csv and NoteNames.csv.
 
 edit_distances.R : First attempt at computing edit distances between note sequences. 
 
@@ -16,6 +16,8 @@ gibbs_align.R : Implement Gibb's aligner.
 line_align.R : Align songs from the same line, generate fasta files and plot the alignment
 
 noteSequences.R : Script to turn songs into a sequence of notes. (Duplicate of a part of alignment.R)
+
+note_processing.R : Take every note and generate its own single wav file and spectrogram.
 
 song2plot.R : Align individual birds, generate fasta and plot. 
 

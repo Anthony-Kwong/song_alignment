@@ -49,9 +49,4 @@ opt_transport <- function(pmf1, pmf2, cost){
   return(lp.solution)
 }
 
-# # consisting of (row, col, value) triples, that lpSolve() accepts.
-# colsum.constraint.sparse.mat <- cbind( 
-#   rep(1:n, each=n), # constraint number
-#   1:(n*n), # index of variable
-#   rep(1, n*n)
-# )
+#add test, you can compare with transport package results

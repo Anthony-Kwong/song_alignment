@@ -1,4 +1,8 @@
-#example 
+#example of how to align a selection of songs,  here we align individual birds
+
+#outputs: fasta file (alignment), 
+
+
 
 #try on song data----
 bird_songs = readr::read_csv("./data/NoteSequences.csv")
@@ -70,7 +74,7 @@ mean_len = floor(nchar(gsub("[^A-Za-z]", "", comb))/length(b37_songs))
 #plot phmm statespace
 plot(song.PHMM)
 
-#simulate sequences for training using fitted phmm
+#simulate sequences for training using fitted phmm (not really necessary, here for illustrative purposes only)
 sim <- list(length = 10)
 suppressWarnings(RNGversion("3.5.0"))
 set.seed(9999)
