@@ -84,7 +84,7 @@ x = note_specgram[[1]]
 eg = "JS0002-20110427-001-10.wav"
 file = read_wave(X = eg)
 output = seewave::spectro(wave = file, wl = 512, ovlp = 50)
-
+10
 #every specgram is an object 
 
 

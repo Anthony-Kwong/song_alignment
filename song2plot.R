@@ -2,8 +2,6 @@
 
 #outputs: fasta file (alignment), 
 
-
-
 #try on song data----
 bird_songs = readr::read_csv("./data/NoteSequences.csv")
 
@@ -28,12 +26,17 @@ for(i in 1:length(birds)){
   comb = paste(bird_songsseqs, collapse = "")
   letters = unique(strsplit(comb, "")[[1]])
   
+  #fit model 
   song.PHMM <- derivePHMM(bird_songs_split, residues = letters, pseudocounts = "Laplace", refine = "BaumWelch")
   #JS220 (69) only sings one note type so we can't align it
   
+  #plot PHMM model, for debugging only
   #plot(song.PHMM)
+  
+  #generate multiple alignment using our fitted PHMM model 
   alignment = align(bird_songs_split, model = song.PHMM, seqweights = NULL, residues = letters)
   
+  #convert into fasta file and save
   alignment_fasta = bio3d::as.fasta(alignment)
   fname = paste("./data/songs_fasta/",birds[i],".fasta",sep="")
   print(fname)
@@ -41,8 +44,11 @@ for(i in 1:length(birds)){
 }
 
 library(ggplot2)
+library(ggmsa)
+#plot a fasta alignment
 ggmsa("./data/songs_fasta/JS37.fasta", color = "LETTER") + geom_seqlogo() + geom_msaBar() 
 
+#plot alignments per individual
 setwd("./data/songs_fasta/")
 fastas = list.files()
 for(i in 1:length(fastas)){
