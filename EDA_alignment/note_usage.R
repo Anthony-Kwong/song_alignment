@@ -1,12 +1,11 @@
 #script for generating note usage data for alignment paper
 
 seq.df = readr::read_csv("./data/NoteSequences.csv")
-song.df <- read.csv( "~/Dropbox (The University of Manchester)/Java_Sparrow_Temporal/Lewisetal2021_UnitTable2_Tempo.csv", header=TRUE )
-
-
+#read in unit table with updated note labels
+song.df <- read.csv( "./data/Unit_tab_dict.csv", header=TRUE )
 
 #count note usage for every bird
-note.count.mat <- xtabs( ~ song_individual + note_label, data=song.df )
+note.count.mat <- xtabs( ~ Bird.ID + notelab2, data=song.df )
 
 #Turn counts into proportions because some birds might just sing more notes. ----
 # Compute the fraction of each bird,s notes that are of each type
@@ -76,7 +75,7 @@ library(gplots)
 lwid=c(0.2,5) #make column of dendrogram and key very small and other colum very big 
 lhei=c(0.2,5)
 
-png("./results/eda/heatmap.png", width = 15, height = 15, units = "in", res = 300)
+png("./results/eda/heatmap.png", width = 20, height = 20, units = "in", res = 300)
 heatmap.2(
   t(note.prop.mat),
   col=terrain.colors(256), 
@@ -84,21 +83,40 @@ heatmap.2(
   #main="Proportion of notes recorded (per bird)",
   key.title="Key", key.xlab="Proportion of notes",
   #reduce white margins
-  margins=c(12, 15),
+  margins=c(20, 20),
   colCol = x_colors,
   cexRow = 1.5,
   dendrogram = "none",
   #get R to not reorder rows and cols by dendrogram
   Rowv = NA, 
   Colv = NA, 
-  key = FALSE,
+  key = F,
   #get rid of white spaces
   lwid = lwid, 
   lhei = lhei
 )
 dev.off()
 
-heatmap(t(note.prop.mat), )
+#heatmap v2 with the color key
+png("./results/eda/heatmap2.png", width = 20, height = 15, units = "in", res = 300)
+heatmap.2(
+  t(note.prop.mat),
+  col=terrain.colors(256), 
+  trace="none",
+  #main="Proportion of notes recorded (per bird)",
+  key.title="Key", key.xlab="Proportion of notes",
+  #reduce white margins
+  #margins=c(10, 10),
+  colCol = x_colors,
+  cexRow = 1,
+  dendrogram = "none",
+  #get R to not reorder rows and cols by dendrogram
+  Rowv = NA, 
+  Colv = NA, 
+  key = TRUE,
+)
+dev.off()
+
 
 #boxplot of sequence length
 
@@ -118,7 +136,50 @@ len_tab = do.call(rbind, len_tab)
 
 library(ggplot2)
 
-x = ggplot(len_tab, aes(x = Line, y = note_count)) +
-  geom_boxplot()
+dur_plot = ggplot(len_tab, aes(x = Line, y = note_count)) +
+  geom_boxplot() +
+  labs(x = "Social lineage", y = "song length")
 
-ggsave(x, path = "./results/eda/x.png")
+ggsave(dur_plot, file = "./results/eda/songlen_boxplot.png")
+
+#produce dictionary table
+note_dic = readr::read_csv("./data/NoteNames.csv")
+x = tibble::tibble(note_dic$note.label, note_dic$note.char, note_dic$n.occurrences)
+colnames(x) = c("note name", "letter", "number of occurences")
+xtable::xtable(x, caption = "Table of note classes with their abbreviated name and number of occurences in the Java sparrows song dataset",
+               label = "note_tab", digits = 0)
+
+#number of unique note classes per social lineage
+head(seq.df)
+lines
+
+x = seq.df %>%
+  dplyr::filter(Line == L)
+y <- paste0(x$note.seq,sep = "", collapse = "")
+strsplit(y, "")[[1]]
+strsplit(y, "")[[1]] %>% unique()
+
+char_tab = lapply(lines, function(L){
+  ldf = seq.df %>%
+    dplyr::filter(Line == L)
+  lchar = paste0(ldf$note.seq,sep = "", collapse = "")
+  #get number of unique characters
+  nchar = strsplit(lchar, "")[[1]] %>% unique()
+  unchar = length(nchar)
+  
+  #get number of songs
+  nsong = nrow(ldf)
+  
+  #get number of birds
+  nbird = unique(ldf$Bird.ID) %>% length()
+  
+  #output data
+  tibble::tibble(Line = L, birds = nbird, nsong ,unchar)
+})
+
+char_tab = do.call(rbind, char_tab)
+colnames(char_tab) = c("Social lineage", "Birds", "Songs" ,"Note classes")
+xtable::xtable(char_tab, caption = "Table of the 10 social lineages, showing the number of individuals, the number of songs and the number of unique note classes found in all their songs.",
+       label = "line_tab", digits = 0)
+
+x$xtable

@@ -2,3 +2,5 @@ Readme for EDA_alignment
 
 Here is a directory containing scripts for exploratory data analysis within the
 alignment project. 
+
+note_usage.R : EDA on note usage. Produce note usage heatmap and song duration boxplot. 

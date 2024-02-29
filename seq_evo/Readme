@@ -1,0 +1,3 @@
+Readme for /seq_evo scripts
+
+note_specgram_convert.R : Turns every song into a spectrogram. Then cuts out the spectrogram for every note using the unit table from Lewis et. al. 2021. 

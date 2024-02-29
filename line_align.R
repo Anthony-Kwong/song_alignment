@@ -4,7 +4,7 @@ library("aphid")
 library("ggmsa")
 
 
-bird_songs = readr::read_csv("./data/NoteSequences.csv")
+bird_songs = readr::read_csv("~/Documents/GitHub/song_alignment/data/NoteSequences.csv")
 lines = unique(bird_songs$Line)
 
 #check number of recordings for every bird, for data purposes
@@ -60,4 +60,6 @@ for(i in 1:length(fastas)){
   plotname = paste("../../alignment_plots/",fname,".png", sep = "")
   ggsave(plot, file = plotname)
 }
+
+
 

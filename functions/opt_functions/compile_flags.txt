@@ -1,0 +1,8 @@
+-I
+/Library/Frameworks/R.framework/Versions/4.3-arm64/Resources/library/Rcpp/include
+-I
+/Library/Frameworks/R.framework/Versions/4.3-arm64/Resources/library/RcppEnsmallen/include
+-I
+/Library/Frameworks/R.framework/Versions/4.3-arm64/Resources/library/RcppArmadillo/include
+-I
+/Library/Frameworks/R.framework/Versions/4.3-arm64/Resources/include

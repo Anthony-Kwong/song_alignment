@@ -243,6 +243,21 @@ data$class <- sample(c("A","B"),20,replace = T)
 # Heatmap 
 ggplot(data, aes(X, Y, fill= Z)) + 
   geom_tile()
+
+## adding new abbreviated note labels to the unit table for convenience
+head(song.df)
+
+#couldn't get dict to work in mutate
+# song.df %>%
+#   dplyr::mutate(label2 = note.to.char$get(note_label))
+
+#work around
+new_names = lapply(song.df$note_label, function(x){note.to.char$get(x)}) %>%
+  unlist()
+
+song.df2 = tibble::tibble(song.df, notelab2 = new_names)
+write.csv(song.df2, file = "./data/Unit_tab_dict.csv")
+
 ##Alignments ----
 
 #Compute pairwise distances between sequences
