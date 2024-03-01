@@ -14,9 +14,30 @@ library(RcppArmadillo)
 # Compile the C++ engine
 sourceCpp( "SinkhornDistanceEngine.cpp" )
 
+#for more theory see: https://lucyliu-ucsb.github.io/posts/Sinkhorn-algorithm/
+
 ####################################################################
 # Checks the args and packages data for the engines.
 ####################################################################
+#' Compute Sinkorn distances between 2 distributions.
+#'
+#' @param p : Numeric vector representing source distribution. 
+#' @param q : Numeric vector representing destination distribution.
+#' @param cost.mat : Numeric matrix of costs.
+#' @param epsilon : Numeric, coefficient of the regression term
+#' @param tol : numeric, tolerance level for convergence
+#' @param max.cycles : numeric, max number of iterations to cycle through
+#' @param cycles.per.check : numeric, number of cycles to go through before checking transport plan (for efficiency)
+#' @param print.progress : logical
+#'
+#' @return An object containing the optimal transport plan and cost. 
+#' @export
+#'
+#' @examples p = c(0.25, 0.25, 0.4, 0.1)
+#' q = c(0.1, 0.15, 0.5, 0.1, 0.15)
+#' C = matrix(1, nrow = 5, ncol = 4)
+#' entropyRegularisedKOT(p=p,q=q,cost.mat = C)
+#' 
 entropyRegularisedKOT <- function( 
 	p, q, cost.mat, epsilon=1.0, 
 	tol=1.0e-6, max.cycles=200, cycles.per.check=10,

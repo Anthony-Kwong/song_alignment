@@ -34,6 +34,7 @@ song_specs = lapply(song_wavs, function(w){
 unit_tab <- read.csv( "~/Dropbox (The University of Manchester)/Java_Sparrow_Temporal/Lewisetal2021_UnitTable2_Tempo.csv", header=TRUE )
 
 #for every song recording (sound.files), we excise the spectrograms for every note
+library(magrittr)
 
 final_note_specgrams = lapply(song_wavs, function(w){
   #for every wav file, w do:
@@ -73,6 +74,59 @@ final_note_specgrams = lapply(song_wavs, function(w){
   return(note_specgrams)
 })
 
-#comput sinkorn distances between note classes
+#compute sinkorn distances between note classes----
+rec1 = final_note_specgrams[[1]]
 
+note1 = rec1[[1]]
+note2 = rec1[[2]]
+
+#get amplitude matrices
+A1 = note1$amp
+A2 = note2$amp
+
+#process amplitude matrices
+As = lapply(list(A1,A2), function(X){
+  #turn everything positive
+  pos = X - min(X)
+  #normalise
+  pos/sum(pos)
+})
+
+#vectorise matrices for optimal transport ----
+vA1 = as.vector(A1[[1]])
+vA2 = as.vector(As[[2]])
+
+#initialise cost matrix
+lA1 = nrow(A1)*ncol(A1)
+lA2 = nrow(A2)*ncol(A2)
+C = matrix(0, ncol = lA1, nrow = lA2)
+
+#initialize cost vector
+c = rep(0, lA1*lA2)
+
+#do first column of C
+for(q in 1:length)
+
+X = matrix(c(1,2,3,4), nrow = 2)
+as.vector(X)
+
+
+cost.mat.k <- 2 # k=2 is the Wasserstein metric
+#initialise matrix of 0's
+mat.tmp <- rep( 0.0, length(A1)*length(A2) )
+cost.mat <- matrix( mat.tmp, ncol=length(A1) ,)
+for(i in 1:length(A2)){
+  cost.mat[i,] = abs(A1 - A2[i])^cost.mat.k
+}
+
+entropyRegularisedKOT(p = A1, q = A2, cost.mat = cost.mat)
+
+
+
+# library(waddR)
+# 
+# set.seed(24)
+# x <- rnorm(100,mean=0,sd=1)
+# y <- rnorm(100,mean=2,sd=1)
+# wasserstein_metric(x,y,p=2)
 

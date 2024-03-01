@@ -7,7 +7,8 @@ pair.pal <- brewer.pal( 12, "Paired" )
 
 # Load all of our tools
 do.tests <- TRUE
-source( "SinkhornDistances.R" )
+setwd("~/Documents/GitHub/song_alignment/functions/opt_functions/")
+source("SinkhornDistances.R")
 source( "ParabolicPdf.R" )
 
 #################################################################################
