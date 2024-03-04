@@ -38,6 +38,10 @@ sourceCpp( "SinkhornDistanceEngine.cpp" )
 #' C = matrix(1, nrow = 5, ncol = 4)
 #' entropyRegularisedKOT(p=p,q=q,cost.mat = C)
 #' 
+
+####################################################################
+# Checks the args and packages data for the engines.
+####################################################################
 entropyRegularisedKOT <- function( 
 	p, q, cost.mat, epsilon=1.0, 
 	tol=1.0e-6, max.cycles=200, cycles.per.check=10,
@@ -65,22 +69,18 @@ entropyRegularisedKOT <- function(
     }
 		
     # Assemble the input data for the engines. The main work here is to ensure
-    # that p has only nonzero entries.
+    # that p and q have only nonzero entries.
     engine.args <- list(
-    	q=q, epsilon=epsilon, tol=tol, 
+    	epsilon=epsilon, tol=tol, 
     	max.cycles=max.cycles, cycles.per.check=cycles.per.check,
     	print.progress=print.progress
     )
     
-    p.has.zeros <- any(p == 0.0)
-    if( p.has.zeros ) {
-        idx <- p > 0
-        engine.args$p <- p[idx]
-        engine.args$cost.mat <- cost.mat[,idx]
-    } else {
-        engine.args$p <- p
-        engine.args$cost.mat <- cost.mat
-    }
+	p.idx <- p > 0.0
+	q.idx <- q > 0.0    
+    engine.args$p <- p[p.idx]
+    engine.args$q <- q[q.idx]
+    engine.args$cost.mat <- cost.mat[q.idx, p.idx]
     
     # Invoke either the scalar or sequence versions of the Sinkhorn algorithm.
     if( length(epsilon) == 1 ) {
@@ -90,14 +90,18 @@ entropyRegularisedKOT <- function(
     	result <- RcppSinkhornEpsSeqEngine( engine.args )
     }
 
-    # If p contained zeroes, adjust the result accordingly
-    if( p.has.zeros ) {
-    	tmp <- matrix(rep( 0.0, length(p)*length(q) ), nrow=length(q) )
+    # If p or q contained zeroes, adjust the result accordingly
+	tmp <- matrix(rep( 0.0, length(p)*length(q) ), nrow=length(q) )
+	if( length(epsilon) == 1 ) {
+		tmp[q.idx,p.idx] <- result$transport.mat
+		result$transport.mat <- tmp
+	}
+	else {
 		for( j in 1:length(epsilon)) {
-			tmp[,idx] <- result$transport.mat[[j]]
-			result$transport.mat[[j]] <- tmp
+			tmp[q.idx,p.idx] <- result$transport.mat[[j]]
+			full.results[[j]] <- tmp
 		}
-    }
-
+	}
+	
     return( result )
 }

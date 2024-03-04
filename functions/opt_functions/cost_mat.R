@@ -11,6 +11,8 @@
 #' @export
 #'
 #' @examples
+#' 
+Rcpp::sourceCpp("./costmat_C.cpp")
 cost_mat <- function(p,q, k = 2){
   #get vectors for source distribution
   
@@ -22,6 +24,8 @@ cost_mat <- function(p,q, k = 2){
   #time
   tp = p$time
   tq = q$time
+  
+  
   
   #get f and t values as tables ----
   vals = lapply(list(tp,tq), function(t){
@@ -46,26 +50,18 @@ cost_mat <- function(p,q, k = 2){
   plen = nrow(p_vals)
   qlen = nrow(q_vals)
   
-  C = matrix(0, ncol = plen, nrow = qlen)
-  #loop over rows
-  for(i in 1:qlen){
-    #loop over cols
-    for(j in 1:plen){
-      Q = q_vals[i,]
-      P = p_vals[j,]
-      C[i,j] = (Q$freq.ticks - P$freq.ticks)^k + a^(k)*(Q$time.ticks - P$time.ticks)^k
-    }
-  }
+  C = costmat_C(pf = p_vals$freq.ticks, pt = p_vals$time.ticks, qf = q_vals$freq.ticks, qt = q_vals$time.ticks)
+  
+  # C = matrix(0, ncol = plen, nrow = qlen)
+  # #loop over rows
+  # for(i in 1:qlen){
+  #   #loop over cols
+  #   for(j in 1:plen){
+  #     Q = q_vals[i,]
+  #     P = p_vals[j,]
+  #     C[i,j] = (Q$freq.ticks - P$freq.ticks)^k + a^(k)*(Q$time.ticks - P$time.ticks)^k
+  #   }
+  # }
   
   return(C)
 }
-
-#test
-
-
-# cost.mat.k <- 2 # k=2 is the Wasserstein metric
-# mat.tmp <- rep( 0.0, length(p.mid.pts)*length(q.mid.pts) )
-# cost.mat <- matrix( mat.tmp, ncol=length(p.mid.pts) )
-# for( j in 1:n.bins ) {
-#   cost.mat[,j] <- abs(q.mid.pts - p.mid.pts[j])^cost.mat.k
-# }

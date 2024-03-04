@@ -74,7 +74,11 @@ final_note_specgrams = lapply(song_wavs, function(w){
   return(note_specgrams)
 })
 
+saveRDS(final_note_specgrams, file = "./data/final_note_specgrams.rds")
+
 #compute sinkorn distances between note classes----
+
+#small example
 rec1 = final_note_specgrams[[1]]
 
 note1 = rec1[[1]]
@@ -93,40 +97,18 @@ As = lapply(list(A1,A2), function(X){
 })
 
 #vectorise matrices for optimal transport ----
-vA1 = as.vector(A1[[1]])
+vA1 = as.vector(As[[1]])
 vA2 = as.vector(As[[2]])
 
-#initialise cost matrix
-lA1 = nrow(A1)*ncol(A1)
-lA2 = nrow(A2)*ncol(A2)
-C = matrix(0, ncol = lA1, nrow = lA2)
+#Cost matrix
+source("./functions/opt_functions/cost_mat.R")
+C = cost_mat(p = note1, q = note2)
 
-#initialize cost vector
-c = rep(0, lA1*lA2)
-
-#do first column of C
-for(q in 1:length)
-
-X = matrix(c(1,2,3,4), nrow = 2)
-as.vector(X)
-
-
-cost.mat.k <- 2 # k=2 is the Wasserstein metric
-#initialise matrix of 0's
-mat.tmp <- rep( 0.0, length(A1)*length(A2) )
-cost.mat <- matrix( mat.tmp, ncol=length(A1) ,)
-for(i in 1:length(A2)){
-  cost.mat[i,] = abs(A1 - A2[i])^cost.mat.k
-}
-
-entropyRegularisedKOT(p = A1, q = A2, cost.mat = cost.mat)
+#compute sinkorn distances
+setwd("./functions/opt_functions/")
+source("SinkhornDistances.R")
+res = entropyRegularisedKOT(p = vA1, q = vA2, cost.mat = C,max.cycles = 500)
 
 
 
-# library(waddR)
-# 
-# set.seed(24)
-# x <- rnorm(100,mean=0,sd=1)
-# y <- rnorm(100,mean=2,sd=1)
-# wasserstein_metric(x,y,p=2)
-
+####
