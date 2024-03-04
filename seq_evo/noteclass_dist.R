@@ -40,3 +40,5 @@ for(i in 1:nsam){
   
   res[[i]] = opt
 }
+
+saveRDS(res, "sinkorn_res.rds")
