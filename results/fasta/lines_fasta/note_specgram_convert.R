@@ -41,7 +41,7 @@ final_note_specgrams = lapply(song_wavs, function(w){
   song_tab = unit_tab %>%
     dplyr::filter(sound.files == w)
   
-  #some songs haven't been processed and aren't in the unit table
+  #some songs haven't been processed and aren't in the unit table, since we can't use next in lapply
   if(nrow(song_tab)==0) return(NA)
   
   #get the whole song specgram
@@ -73,6 +73,8 @@ final_note_specgrams = lapply(song_wavs, function(w){
   
   return(note_specgrams)
 })
+
+final_note_specgrams = lapply(final_note_specgrams, function(x) x[!is.na(x)])
 
 saveRDS(final_note_specgrams, file = "./data/final_note_specgrams.rds")
 
