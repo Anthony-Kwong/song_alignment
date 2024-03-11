@@ -2,6 +2,8 @@
 
 library("aphid")
 library("ggmsa")
+library('magrittr')
+source("./functions/og_order.R")
 
 
 bird_songs = readr::read_csv("~/Documents/GitHub/song_alignment/data/NoteSequences.csv")
@@ -42,9 +44,11 @@ for(i in 1:length(lines)){
   #plot PHMM for demonstration only
   #plot(song.PHMM)
   alignment = align(bird_songs_split, model = song.PHMM, seqweights = NULL, residues = letters)
+  #retain original order as in bird_songseqs
+  A = og_order(align_mat = alignment, song_seqs = bird_songsseqs)
   
   #save alignment as a fasta file
-  alignment_fasta = bio3d::as.fasta(alignment)
+  alignment_fasta = bio3d::as.fasta(A)
   fname = paste("./results/fasta/lines_fasta/",lines[i],".fasta",sep="")
   print(fname)
   bio3d::write.fasta(alignment_fasta, file = fname)
@@ -53,6 +57,8 @@ for(i in 1:length(lines)){
 setwd("./results/fasta/lines_fasta/")
 
 #plot multiple alignments for every song lineage
+
+library(ggplot2)
 fastas = list.files()
 for(i in 1:length(fastas)){
   fname = paste("./",fastas[i], sep ="")
