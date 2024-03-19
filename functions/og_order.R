@@ -27,12 +27,22 @@ og_order <- function(align_mat, song_seqs) {
   indices = as.vector(indices)
   A_star = align_mat[indices,]
   
-  return(A_star)
+  # Find columns with all "-" ----
+  cols_to_remove <- apply(A_star, 2, function(c){all(c=="-")})
+  cols_to_remove <- which(cols_to_remove)
+  if(length(cols_to_remove) < 1){
+    return(A_star)
+  } else {
+    # Remove columns with all "-"
+    cleaned_Astar <- A_star[, -cols_to_remove]
+    return(cleaned_Astar)
+  }
 }
 
-#tests 
+ #tests 
 
 song_seqs = c("ACCBC", "ABBA", "ABBA")
 A = t(matrix(c("A","B","B","A","-", "A", "C", "C", "B", "C", "A","B","B","A","-"), ncol = 3))
 output = og_order(align_mat = A, song_seqs = song_seqs)
 testthat::expect_equal(A[c(2,1,1),], output)
+

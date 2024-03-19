@@ -12,8 +12,8 @@
 #'
 #' @examples
 #' 
-Rcpp::sourceCpp("./costmat_C.cpp")
-cost_mat <- function(p,q, k = 2){
+Rcpp::sourceCpp("./functions/opt_functions/costmat_C.cpp")
+cost_mat <- function(p,q, a=1.0 ,k=2 ){
   #get vectors for source distribution
   
   #frequency
@@ -21,11 +21,9 @@ cost_mat <- function(p,q, k = 2){
   #same sampling rate for every recording so these should be equal
   testthat::expect_equal(p$freq, q$freq)
   
-  #time
-  tp = p$time
-  tq = q$time
-  
-  
+  #time: make each interval symmetric about zero
+  tp = p$time - (p$time[1] + p$time[length(p$time)]) / 2
+  tq = q$time - (q$time[1] + q$time[length(q$time)]) / 2
   
   #get f and t values as tables ----
   vals = lapply(list(tp,tq), function(t){
@@ -50,18 +48,10 @@ cost_mat <- function(p,q, k = 2){
   plen = nrow(p_vals)
   qlen = nrow(q_vals)
   
-  C = costmat_C(pf = p_vals$freq.ticks, pt = p_vals$time.ticks, qf = q_vals$freq.ticks, qt = q_vals$time.ticks)
-  
-  # C = matrix(0, ncol = plen, nrow = qlen)
-  # #loop over rows
-  # for(i in 1:qlen){
-  #   #loop over cols
-  #   for(j in 1:plen){
-  #     Q = q_vals[i,]
-  #     P = p_vals[j,]
-  #     C[i,j] = (Q$freq.ticks - P$freq.ticks)^k + a^(k)*(Q$time.ticks - P$time.ticks)^k
-  #   }
-  # }
+  C = costmat_C(pf = p_vals$freq.ticks, pt = p_vals$time.ticks, qf = q_vals$freq.ticks, qt = q_vals$time.ticks, a, k)
   
   return(C)
 }
+
+#add test later
+

@@ -1,0 +1,3 @@
+./algn_proj contains scripts to be included for the alignment paper work
+
+robust.R : Check for robustness of alignments with respect to model parameters.

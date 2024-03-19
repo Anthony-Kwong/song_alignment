@@ -12,7 +12,7 @@ library(Rcpp)
 library(RcppArmadillo)
 
 # Compile the C++ engine
-sourceCpp( "SinkhornDistanceEngine.cpp" )
+sourceCpp("./functions/opt_functions/SinkhornDistanceEngine.cpp")
 
 #for more theory see: https://lucyliu-ucsb.github.io/posts/Sinkhorn-algorithm/
 

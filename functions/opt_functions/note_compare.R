@@ -4,6 +4,7 @@
 #'
 #' @param n1 : Spectrogram of note1 as a list.
 #' @param n2 : Spectrogram of note2 as a list.
+#' @param a : Numeric, a weight to modify the time dimension when computing the cost matrix. Default 1.0.
 #'
 #' @return The output of entropyRegularisedKOT() from the SinkhornDistances.R.
 #' @export
@@ -16,7 +17,7 @@ source("./cost_mat.R")
 #set tests
 doTests = T
 
-note_compare <- function(n1,n2){
+note_compare <- function(n1,n2,a=1.0){
   
   #get amplitude matrices
   A1 = n1$amp
@@ -45,7 +46,7 @@ note_compare <- function(n1,n2){
   }
 
   #Cost matrix
-  C = cost_mat(p = n1, q = n2)
+  C = cost_mat(p = n1, q = n2, a = a)
   
   #compute sinkorn distances
   res = entropyRegularisedKOT(p = vA1, q = vA2, cost.mat = C,max.cycles = 500)
