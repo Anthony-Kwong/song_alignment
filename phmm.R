@@ -2,6 +2,8 @@ library("aphid")
 data("globins")
 globins
 
+#phmm example
+
 #fit phmm model
 globins.PHMM <- derivePHMM(globins, residues = "AMINO", pseudocounts = "Laplace")
 #plot phmm statespace

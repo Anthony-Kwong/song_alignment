@@ -1,4 +1,4 @@
-#convert song sequences to fasta
+#convert song sequences to fasta (example)
 b37_a
 
 alignment_37

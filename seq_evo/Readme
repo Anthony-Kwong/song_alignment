@@ -1,3 +1,14 @@
 Readme for /seq_evo scripts
 
+EstimateTransmissionMat.R : Use the least squares method for inferring the transmission matrix T. 
+
+LikeTransmissionMat.R : Use the likelihood method for inferring the transmission matrix T. 
+
+margin.R : Solve OT problem using the marginal distributions of time and frequency. Used to investigate the weighting between time and frequency. 
+
+mat_setup.R : Create the father/son matrices for the seq. evolution problem. 
+
+note_durations.R : Get note duration statistics. 
+
 note_specgram_convert.R : Turns every song into a spectrogram. Then cuts out the spectrogram for every note using the unit table from Lewis et. al. 2021. 
+

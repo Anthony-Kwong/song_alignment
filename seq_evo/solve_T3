@@ -1,0 +1,36 @@
+#small example for solve_T
+
+A = [0.1 0.2 0.3; 0.2 0.3 0.4; 0.7 0.5 0.3]
+B = [0.15 0.2 0.3; 0.2 0.35 0.45; 0.65 0.45 0.25]
+
+using JuMP, Ipopt , LinearAlgebra
+
+
+#define model
+m1 = Model(Ipopt.Optimizer)
+
+# Set solver options (tolerance)
+set_optimizer_attribute(m1, "tol", 1e-15)
+set_optimizer_attribute(m1, "constr_viol_tol", 1e-15)
+
+K = size(A,1)
+N = size(A,2)
+
+#define variables
+@variable(m1, 0<= T[1:K, 1:K] <= 1)
+#@NLobjective(m, Min, sum(Y-T*X)^2 ), what I meant but Julia doesn't like it so code below.
+@objective(m1, Min, sum((B[i, j] - sum(T[i, k] * A[k, j] for k in 1:K))^2 for i in 1:K, j in 1:N))
+@constraint(m1, [i = 1:K], sum(T[i, j] for j in 1:K) == 1)
+
+# Solve the optimization problem
+optimize!(m1)
+
+# Retrieve the optimal solution
+optimal_T = value.(T)
+
+sums = zeros(K)
+for i in 1:K
+    sums[i] = sum(optimal_T[:,i])
+end
+
+sums

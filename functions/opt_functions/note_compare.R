@@ -4,7 +4,10 @@
 #'
 #' @param n1 : Spectrogram of note1 as a list.
 #' @param n2 : Spectrogram of note2 as a list.
-#' @param a : Numeric, a weight to modify the time dimension when computing the cost matrix. Default 1.0.
+#' @param a: Numeric. Weight to modify the time dimension. 
+#' @param epsilon : Numeric. Epsilon value to use for optimal transport problem. (fast method)
+#' @param max.cycles : Numeric. Max number of iterations to go through before exiting.
+#' @param k : Numeric. Power for the Wasserstein distance.
 #'
 #' @return The output of entropyRegularisedKOT() from the SinkhornDistances.R.
 #' @export
@@ -15,9 +18,9 @@
 source("./SinkhornDistances.R")
 source("./cost_mat.R")
 #set tests
-doTests = T
+doTests = FALSE
 
-note_compare <- function(n1,n2,a=1.0){
+note_compare <- function(n1,n2,a, epsilon=0.1, max.cycles=1000, k=2){
   
   #get amplitude matrices
   A1 = n1$amp
@@ -44,13 +47,15 @@ note_compare <- function(n1,n2,a=1.0){
     testthat::expect_equal(D2[,1], vA2[1:nrow(D2)])
     testthat::expect_equal(D2[,3], vA2[(2*nrow(D2)+1):(3*nrow(D2))])
   }
-
+  
   #Cost matrix
-  C = cost_mat(p = n1, q = n2, a = a)
+  C = cost_mat(p = n1, q = n2, a = a, k)
+  if( is.null(C) ) {
+    return( NULL )
+  }
   
   #compute sinkorn distances
-  res = entropyRegularisedKOT(p = vA1, q = vA2, cost.mat = C,max.cycles = 500)
+  res = entropyRegularisedKOT(p = vA1, q = vA2, cost.mat = C, epsilon=epsilon, max.cycles=max.cycles )
   
   return(res)
 }
-

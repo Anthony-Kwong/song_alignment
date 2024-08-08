@@ -11,7 +11,6 @@
 #' @export
 #'
 #' @examples
-#' 
 Rcpp::sourceCpp("./functions/opt_functions/costmat_C.cpp")
 cost_mat <- function(p,q, a=1.0 ,k=2 ){
   #get vectors for source distribution
@@ -48,10 +47,15 @@ cost_mat <- function(p,q, a=1.0 ,k=2 ){
   plen = nrow(p_vals)
   qlen = nrow(q_vals)
   
-  C = costmat_C(pf = p_vals$freq.ticks, pt = p_vals$time.ticks, qf = q_vals$freq.ticks, qt = q_vals$time.ticks, a, k)
+  C = costmat_C(pf = p_vals$freq.ticks, pt = p_vals$time.ticks, qf = q_vals$freq.ticks, qt = q_vals$time.ticks, a = a, k = k)
   
   return(C)
 }
 
-#add test later
+#add test to check correct inputs for costmat_C
+f = seq(from = 0, to = 22, by = 4)
+p = list(freq = f, time = seq(from=0,to=5, by = 3))
+q = list(freq = f, time = seq(from=0,to=10, by = 4))
+
+cost_mat()
 
