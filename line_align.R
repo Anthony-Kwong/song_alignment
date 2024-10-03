@@ -3,6 +3,9 @@
 library("aphid")
 library("ggmsa")
 library('magrittr')
+
+setwd("~/Documents/GitHub/song_alignment/")
+
 source("./functions/og_order.R")
 
 
@@ -26,6 +29,10 @@ for(i in 1:length(lines)){
   filtered_bird = bird_songs %>%
     dplyr::filter( Line == lines[i])
   
+  #get Bird IDs for labelling alignment
+  IDs = filtered_bird$Bird.ID
+  bIDs = paste0(IDs,"_", ave(IDs, IDs, FUN = seq_along))
+  
   #get note sequences as long strings
   bird_songsseqs = filtered_bird$note.seq
   
@@ -43,27 +50,28 @@ for(i in 1:length(lines)){
   
   #plot PHMM for demonstration only
   #plot(song.PHMM)
+  
   alignment = align(bird_songs_split, model = song.PHMM, seqweights = NULL, residues = letters)
   #retain original order as in bird_songseqs
   A = og_order(align_mat = alignment, song_seqs = bird_songsseqs)
   
   #save alignment as a fasta file
-  alignment_fasta = bio3d::as.fasta(A)
+  alignment_fasta = bio3d::as.fasta(A, id = bIDs)
   fname = paste("./results/fasta/lines_fasta/",lines[i],".fasta",sep="")
   print(fname)
   bio3d::write.fasta(alignment_fasta, file = fname)
 }
 
-setwd("./results/fasta/lines_fasta/")
+#setwd("./results/fasta/lines_fasta/")
 
 #plot multiple alignments for every song lineage
 
 library(ggplot2)
-fastas = list.files()
+fastas = list.files(path = "./results/fasta/lines_fasta/")
 for(i in 1:length(fastas)){
-  fname = paste("./",fastas[i], sep ="")
-  plot = ggmsa(fname, color = "LETTER") + geom_seqlogo() + geom_msaBar() 
-  plotname = paste("../../alignment_plots/",fname,".png", sep = "")
+  fname = paste("./results/fasta/lines_fasta/",fastas[i], sep ="")
+  plot = ggmsa(fname, color = "LETTER", seq_name = TRUE, char_width = 0.2) + geom_msaBar() 
+  plotname = paste("./results/alignment_plots/",fastas[i],".png", sep = "")
   ggsave(plot, file = plotname)
 }
 
