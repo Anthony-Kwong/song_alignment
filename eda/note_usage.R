@@ -75,7 +75,7 @@ library(gplots)
 lwid=c(0.2,5) #make column of dendrogram and key very small and other colum very big 
 lhei=c(0.2,5)
 
-png("./results/eda/heatmap.png", width = 20, height = 20, units = "in", res = 300)
+png("./results/eda/heatmap.png", width = 30, height = 30, units = "in", res = 300)
 heatmap.2(
   t(note.prop.mat),
   col=terrain.colors(256), 
@@ -85,7 +85,8 @@ heatmap.2(
   #reduce white margins
   margins=c(20, 20),
   colCol = x_colors,
-  cexRow = 1.5,
+  cexCol = 3, #column text sizes
+  cexRow = 3,
   dendrogram = "none",
   #get R to not reorder rows and cols by dendrogram
   Rowv = NA, 
@@ -97,23 +98,56 @@ heatmap.2(
 )
 dev.off()
 
+blue_red_palette <- colorRampPalette(c("blue", "white", "red"))
 #heatmap v2 with the color key
-png("./results/eda/heatmap2.png", width = 20, height = 15, units = "in", res = 300)
+png("./results/eda/heatmap2.png", width = 45, height = 40, units = "in", res = 300)
 heatmap.2(
   t(note.prop.mat),
-  col=terrain.colors(256), 
+  #col=terrain.colors(256), 
+  col = blue_red_palette(256),
   trace="none",
   #main="Proportion of notes recorded (per bird)",
   key.title="Key", key.xlab="Proportion of notes",
   #reduce white margins
-  #margins=c(10, 10),
+  margins=c(20, 20),
   colCol = x_colors,
-  cexRow = 1,
+  cexCol = 4, #column text sizes
+  cexRow = 4,
   dendrogram = "none",
   #get R to not reorder rows and cols by dendrogram
   Rowv = NA, 
   Colv = NA, 
-  key = TRUE,
+  key = F,
+  #get rid of white spaces
+  lwid = lwid, 
+  lhei = lhei
+)
+dev.off()
+
+#version 3 with scale bar
+
+png("./results/eda/heatmap3.png", width = 12, height = 12, units = "in")
+heatmap.2(
+  t(note.prop.mat),
+  #col=terrain.colors(256), 
+  col = blue_red_palette(256),
+  trace="none",
+  #main="Proportion of notes recorded (per bird)",
+  key.title="Key", key.xlab="Proportion of notes",
+  #reduce white margins
+  #margins=c(20, 20),
+  colCol = x_colors,
+  cexCol = 6, #column text sizes
+  cexRow = 6,
+  dendrogram = "none",
+  #get R to not reorder rows and cols by dendrogram
+  Rowv = NA, 
+  Colv = NA, 
+  key = T, #scale bar
+  #keysize = 5
+  #get rid of white spaces
+  # lwid = lwid,
+  # lhei = lhei
 )
 dev.off()
 

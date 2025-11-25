@@ -104,3 +104,4 @@ cor.dendlist(comp_trees)
 hclust(kin.trim)
 as.dist(kin.trim)
 ?hclust()
+

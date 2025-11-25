@@ -29,7 +29,7 @@ for(i in 1:length(lines)){
   filtered_bird = bird_songs %>%
     dplyr::filter( Line == lines[i])
   
-  #get Bird IDs for labelling alignment
+  #get Bird IDs for labeling alignment
   IDs = filtered_bird$Bird.ID
   bIDs = paste0(IDs,"_", ave(IDs, IDs, FUN = seq_along))
   
@@ -75,5 +75,8 @@ for(i in 1:length(fastas)){
   ggsave(plot, file = plotname)
 }
 
-
-
+#plot an individual
+fname = paste("./data/songs_fasta/JS329.fasta")
+plot = ggmsa(fname, color = "LETTER", seq_name = TRUE, char_width = 0.2) + geom_msaBar() 
+plotname = paste("./results/alignment_plots/JS329.png")
+ggsave(plot, file = plotname)

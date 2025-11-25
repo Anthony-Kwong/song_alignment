@@ -21,4 +21,3 @@ count.df
 stats::heatmap(t(count.df))
 gplots::heatmap.2(t(count.df), col = terrain.colors(256))
 
-

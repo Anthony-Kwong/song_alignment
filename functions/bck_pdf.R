@@ -14,11 +14,20 @@ bck_pdf <- function(data){
   seqs = unlist(strsplit(data, split = ""))
   letter_counts = table(seqs)
   prop_tab = prop.table(letter_counts)
-  return(prop_tab)
+  #get alphabet
+  alphabet = names(prop_tab)
+  prop_mat = matrix(prop_tab)
+  rownames(prop_mat) = alphabet
+  return(prop_mat)
 }
 
-library(testthat)
-data = c("CCABBACCCC", "DDABBADDDD", "EEABBAEEEE")
-b = bck_pdf(data)
-expect_equal(as.numeric(b), rep(0.2,5))
+testthat::test_that("",{
+  data = rbind(c("A","B","B","A"), c("C","C","C","A"),c("A","B","C","C"))
+  output = bck_pdf(data)
+  
+  ans = matrix(c(4/12,3/12,5/12))
+  rownames(ans) = c("A","B","C")
+  testthat::expect_equal(output, ans)
+})
+
 

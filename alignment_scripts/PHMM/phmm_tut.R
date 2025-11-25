@@ -1,3 +1,5 @@
+#quick tutorial on how to use aphid package to align sequence strings. 
+
 library("aphid")
 data("globins")
 globins
@@ -8,8 +10,11 @@ globins
 globins.PHMM <- derivePHMM(globins, residues = "AMINO", pseudocounts = "Laplace")
 #plot phmm statespace
 plot(globins.PHMM)
+#Viterbi algorithm demo
+path_stats <- Viterbi(globins.PHMM, globins["GLB1_GLYDI", ])
+
 #use Viterbi to get path
-path <- Viterbi(globins.PHMM, globins["GLB1_GLYDI", ])$path
+path <- Viterbi(globins.PHMM, )$path
 #rename path in Delete, Match, Insert space
 c("D", "M", "I")[path + 1]
 

@@ -54,7 +54,7 @@ pssm <- function(A, bpdf){
       }
       
       #add entry to pseudo count matrix
-      q[i,j] = (cij + b)/(k + b*sigma_size)
+      q[i,j] = (cij + b)/(k -1 + b*sigma_size)
       #add entry to background prob. matrix
       p[i,j] = bpdf[which(names(bpdf)==l)]
     }

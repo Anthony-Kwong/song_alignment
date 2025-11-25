@@ -1,4 +1,4 @@
-Repository for song alignment project. 
+Repository for song alignment project. (Deprecated. To be updated along withn final submission.)
 
 Aim: Align song sequences from a captive population of Java Sparrows. The tool will be applied to compare changes in song characteristics when certain notes change. 
 
@@ -15,6 +15,8 @@ line_align.R : Align songs from the same line, generate fasta files and plot the
 noteSequences.R : Script to turn songs into a sequence of notes. (Duplicate of a part of alignment.R)
 
 note_processing.R : Take every note and generate its own single wav file and spectrogram.
+
+robust.R : Check alignments for different values of lambda. 
 
 song2plot.R : Align individual birds, generate fasta and plot. 
 

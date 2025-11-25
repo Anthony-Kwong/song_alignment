@@ -1,4 +1,4 @@
-#benchmark test for alignment 
+#benchmark test for alignment (deprecated)
 
 #simulate some sequences
 mean_len = 10

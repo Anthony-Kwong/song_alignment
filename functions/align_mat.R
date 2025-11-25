@@ -112,3 +112,6 @@ p = paste(s, collapse = "")
 output_letters = unique(strsplit(p, "")[[1]])
 L = output_letters[order(output_letters)]
 testthat::expect_equal(L, output[[2]])
+
+#remove unneeded variables
+rm(b_data, b_songs, ordered_songs, output, song_seqs_sp)

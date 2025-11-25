@@ -1,6 +1,13 @@
-#example of how to align a selection of songs,  here we align individual birds
+#Script for aligning a set of songs using PHMMs. Here we make a separate alignment for every singer and 
+#save the fasta files. 
 
-#outputs: fasta file (alignment), 
+library(aphid)
+library("ggmsa")
+library('magrittr')
+
+setwd("~/Documents/GitHub/song_alignment/")
+
+source("./functions/og_order.R")
 
 #try on song data----
 bird_songs = readr::read_csv("./data/NoteSequences.csv")
@@ -36,8 +43,11 @@ for(i in 1:length(birds)){
   #generate multiple alignment using our fitted PHMM model 
   alignment = align(bird_songs_split, model = song.PHMM, seqweights = NULL, residues = letters)
   
+  #retain original order as in bird_songseqs
+  A = og_order(align_mat = alignment, song_seqs = bird_songsseqs)
+  
   #convert into fasta file and save
-  alignment_fasta = bio3d::as.fasta(alignment)
+  alignment_fasta = bio3d::as.fasta(A)
   fname = paste("./data/songs_fasta/",birds[i],".fasta",sep="")
   print(fname)
   bio3d::write.fasta(alignment_fasta, file = fname)
@@ -57,6 +67,10 @@ for(i in 1:length(fastas)){
   plotname = paste("../alignment_plots/",fname,".png", sep = "")
   ggsave(plot, file = plotname)
 }
+
+##main script ends here. 
+
+#following is some code for playing around (to be removed in the final version)
 
 
 
@@ -93,3 +107,22 @@ song2.PHMM <- train(song.PHMM, sim, method = "BaumWelch",
 
 plot(song2.PHMM)
 alignment_37 = align(b37_a, model = song2.PHMM, seqweights = NULL, residues = letters)
+
+#more examples for playing around
+
+#convert song sequences to fasta (example)
+b37_a
+
+alignment_37
+a_fasta = bio3d::as.fasta(alignment_37)
+bio3d::write.fasta(a_fasta, file = "./data/songs_fasta/JS0037.fasta")
+ggmsa("./data/songs_fasta/JS0037.fasta", color = "LETTER") + geom_seqlogo() + geom_msaBar()
+
+library(seqinr)
+write.fasta(b37_a, names = paste("JS0037", seq(1:10),sep="_"), file.out = "./data/songs_fasta/JS0037.fasta", as.string = F)
+
+song_sequences <- system.file("./data/songs_fasta/JS0037.fasta")
+ggmsa("./data/songs_fasta/JS0037.fasta") + geom_seqlogo() + geom_msaBar()
+
+protein_sequences <- system.file("extdata", "sample.fasta", package = "ggmsa")
+ggmsa(protein_sequences, start = 221, end = 280, char_width = 0.5, seq_name = T) + geom_seqlogo() + geom_msaBar()

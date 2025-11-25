@@ -39,7 +39,7 @@ og_order <- function(align_mat, song_seqs) {
   }
 }
 
- #tests 
+#tests 
 
 song_seqs = c("ACCBC", "ABBA", "ABBA")
 A = t(matrix(c("A","B","B","A","-", "A", "C", "C", "B", "C", "A","B","B","A","-"), ncol = 3))

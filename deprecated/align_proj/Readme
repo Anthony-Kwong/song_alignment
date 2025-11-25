@@ -1,0 +1,7 @@
+./algn_proj contains scripts to be included for the alignment paper work
+
+consensus.R : Investigate consensus scores in alignments
+
+get_column_proportions.R : Take a character matrix (alignment) and return the proportions for every letter in every column. 
+
+robust.R : Check for robustness of alignments with respect to model parameters.

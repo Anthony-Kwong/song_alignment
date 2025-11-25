@@ -1,5 +1,7 @@
 ################################################################
-# Preprocessing to enable a first stab at aligning songs
+# This is the master preprocessing script which turns the original unit table Lewis. et.al 
+# into note sequences (NoteSequences.csv). 
+# We also generate a heatmap of note usages. 
 # 
 # mrm and Anthony Kwong: Man Uni, 9 December 2021
 ################################################################
