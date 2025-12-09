@@ -103,14 +103,17 @@ for(i in 1:length(fastas)){
 #table of song length statistics for every lineage ----
 #get song length statistics for every lineage
 
-bird_songs %>%
+song_stats = bird_songs %>%
   dplyr::group_by(Line) %>%
   dplyr::summarise(
-    median_length = median(nchar(note.seq), na.rm = TRUE),
-    min_length    = min(nchar(note.seq), na.rm = TRUE),
-    max_length    = max(nchar(note.seq), na.rm = TRUE),
+    `median length` = median(nchar(note.seq), na.rm = TRUE),
+    `minimum length`    = min(nchar(note.seq), na.rm = TRUE),
+    `maximum length`    = max(nchar(note.seq), na.rm = TRUE),
     .groups = "drop"
   )
+
+xtable::xtable(song_stats, caption = "Table of song length statistics for every lineage.",
+               label = "tab:songlen_tab", digits = 0)
 
 #gibbs aligner ----
 
@@ -157,6 +160,14 @@ for(i in 1:length(lines)){
 gibbs_res = do.call(rbind, gibbs_scores)
 readr::write_csv(gibbs_res, file = "./results/msa_scores/gibbs_scores.csv")
 
+gibbs_res = readr::read_csv(file = "./results/msa_scores/gibbs_scores.csv")
+
+gp = ggplot(gibbs_res, aes(y = score, x = wminus, col = line)) +
+  geom_point() +
+  labs(color = "lineage")
+
+ggsave(plot = gp, filename = "./results/msa_scores/gibbs_robust.png")
+
 #progressive alignment ----
 
 source("./alignment_scripts/dynami_program/progressive_align.R")
@@ -191,10 +202,14 @@ for(i in 1:length(lines)){
     params = tune_params[k,]
     #fit model
     dynam_model = progressive_align(S = bird_songsseqs, match = params$match, mismatch = params$mismatch, gap = params$gap)
+    #put strings back into original order
+    A = og_order(align_mat = dynam_model, song_seqs = bird_songsseqs)
+    #add back sequence names
+    rownames(A) = bIDs
     #compute min entropy score
-    line_scores[k] = min_entropy(dynam_model)
+    line_scores[k] = min_entropy(A)
     #save alignment as a fasta file
-    alignment_fasta = bio3d::as.fasta(dynam_model)
+    alignment_fasta = bio3d::as.fasta(A)
     fname = paste("./results/fasta/robust_test/dynam_prog/",lines[i],"_match_",params$match
                   ,"_mismatch_", params$mismatch,"_gap_",params$gap ,".fasta",sep="")
     print(fname)
@@ -204,23 +219,121 @@ for(i in 1:length(lines)){
   dynam_scores[[i]] = tibble::tibble(tune_params, score = line_scores)
 }
 
+final_dp_res = list()
+for(i in 1:length(lines)){
+  final_dp_res[[i]] = tibble::tibble(dynam_scores[[i]], lineage = lines[i])
+}
 
+final_dp_res = do.call(rbind, final_dp_res)
+readr::write_csv(final_dp_res, file = "./results/msa_scores/dp_scores.csv")
+
+xtable::xtable(final_dp_res)
+
+#collecting results ----
+
+#read in data
+phmm_res = readr::read_csv("./results/msa_scores/phmm_scores.csv")
+dp_res = readr::read_csv("./results/msa_scores/dp_scores.csv")
+gibbs_res = readr::read_csv("./results/msa_scores/gibbs_scores.csv")
+
+#table of best scores for every lineage
+dp_res = dp_res %>%
+  dplyr::rename(line = lineage)
+
+res = list(phmm_res, dp_res, gibbs_res)
+
+best_mods = list()
+for(i in seq_along(lines)){
+  #filter for line results and get largest score
+  lres = sapply(res, function(d){
+    ld = d %>%
+      dplyr::filter(line == lines[i])
+    best_score = min(ld$score)
+  })
+  best_mods[[i]] = tibble::tibble(line = lines[i], phmm = lres[1], prog_align = lres[2], gibbs = lres[3])
+}
+
+best_mods = do.call(rbind, best_mods)
+
+xtable::xtable(best_mods, caption = "Minimum entropy scores for the best alignment in every lineage for every alignment method.",
+               label = "tab:score_tab", digits = 0)
+
+#ploting phmm scores ----
+
+phmm_res
+
+cleaned_phmm = phmm_res %>%
+  dplyr::mutate(
+    lambda = factor(lambda),
+    max_scale = factor(max_scale),
+    line = factor(line)
+  ) 
+
+cleaned_phmm <- cleaned_phmm %>%
+  dplyr::group_by(line) %>% 
+  dplyr::mutate(scaled_score = dplyr::case_when(max(score) == min(score) ~ 0,TRUE ~ (score - min(score)) / (max(score) - min(score))
+  ))
+
+phmm_plot = ggplot(cleaned_phmm, aes(x = lambda, y = max_scale, fill = scaled_score)) +
+  geom_tile(color = "black", linewidth = 0.6) +
+  facet_wrap(~ line, scales = "free", ncol = 4) +
+  scale_fill_viridis_c(option = "plasma", direction = -1) +
+  labs(
+    x = "Lambda",
+    y = "Max scale",
+    fill = "Scaled score"
+  ) +
+  theme_minimal(base_size = 10) +
+  theme(
+    strip.text = element_text(size = 10, face = "bold"),
+    axis.text.x = element_text(angle = 0),
+    legend.position = "bottom"
+  )
+
+ggsave(phmm_plot, filename = "./results/msa_scores/phmm_robust.png")
+
+#plotting progressive alignment ----
+
+final_dp_res
+
+cleaned_dp = final_dp_res %>%
+  dplyr::mutate(
+    match = factor(match),
+    mismatch = factor(mismatch),
+    gap = factor(gap),
+    lineage = factor(lineage)
+  )
+
+cleaned_dp <- cleaned_dp %>%
+  dplyr::group_by(lineage) %>%
+  dplyr::mutate(
+    score_scaled = (score - min(score)) / (max(score) - min(score))
+  )
+
+pa_robust = ggplot(cleaned_dp, aes(x = match, y = mismatch, fill = score_scaled)) +
+  geom_tile(colour = "black", linewidth = 0.2) +
+  scale_fill_viridis_c(
+    option = "plasma",
+    direction = -1
+  ) +
+  facet_grid(lineage ~ gap, labeller = labeller(lineage = label_value)) +
+  labs(
+    x = "Match score",
+    y = "Mismatch penalty",
+    fill = "Scaled entropy"
+  ) +
+  theme_bw() +
+  theme(
+    strip.text = element_text(size = 6.5),
+    axis.text = element_text(size = 5),
+    axis.title = element_text(size = 9)
+  )
+
+ggsave(plot = pa_robust, filename = "./results/msa_scores/pa_robust.png")
 
 #old code below----
 
 #investigate robustness of alignments to different parameters
-
-bird_songs = readr::read_csv("~/Documents/GitHub/song_alignment/data/NoteSequences.csv")
-birds = bird_songs$Bird.ID
-
-js = "JS0329"
-
-birds = c("JS0329","JS0037")
-
-js_songs = bird_songs %>%
-  dplyr::filter(Bird.ID == js)
-
-setwd("~/Documents/GitHub/song_alignment/results/fasta")
 
 #we are changing match states to insertion states, but this doesnt change the alignment mat A. 
 
@@ -228,8 +341,6 @@ setwd("~/Documents/GitHub/song_alignment/results/fasta")
 
 #affine gap penalties
 
-# 
-# 
 # #testing parameters----
 # 
 # #map method for gaps

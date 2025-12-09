@@ -103,9 +103,10 @@ readr::write_csv(singer_class_res, file = "./results/song_class/song_class.csv")
 
 #compute missclass rate for every lineage separately
 
+singer_class_res = readr::read_csv("./results/song_class/song_class.csv")
 class_tab = singer_class_res %>%
   dplyr::group_by(Line) %>%
-  summarise(
+  dplyr::summarise(
     #fix nrow bit
     accuracy = sum(correct)/n(),
     N = n(),
@@ -113,6 +114,15 @@ class_tab = singer_class_res %>%
     base_rate = 1/length(unique(Bird.ID))
   )
 
-xtable::xtable(class_tab)
+xtable::xtable(class_tab, caption = "Table of song classification results for every lineage, showing the number of songs, number of birds and the base rate. We used pHMMs to assign
+               songs to their singer. The base rate refers to expected accuracy of a model making predictions purely 
+               on chance.", label = "tab:class_tab")
 
-#xtable::xtable(x, caption = "Table of note classes with their abbreviated name and number of occurences in the Java sparrows song dataset",                label = "note_tab", digits = 0)
+xtable::xtable(best_mods, caption = "Minimum entropy scores for the best alignment in every lineage for every alignment method.",
+               label = "tab:score_tab", digits = 0)
+
+k = singer_class_res %>%
+  dplyr::filter(Line == "Yellow")
+
+k = singer_class_res %>%
+  dplyr::filter(Line == "Pale Blue")

@@ -60,7 +60,7 @@ birds = "JS0300"
 bird_dat = bird_songs %>%
   dplyr::filter(Bird.ID == birds)
 
-#get songs for testing
+#get all songs
 songs = bird_dat$note.seq
 #combine all strings together
 comb = paste(songs, collapse = "")
@@ -70,7 +70,7 @@ alphabet = unique(strsplit(comb, "")[[1]])
 bpdf = bck_pdf(songs)
 
 #process motif strings
-motif_train = string_split(js0300_motifs)
+motif_train = string_split(js0300_motifs[1:17]) #train on motifs from recordings 6 to 10
 #set k parameter (to enable fitting in derivepHMM)
 min_len = min(sapply(motif_train, length))
 k = 0
@@ -80,17 +80,54 @@ if(min_len > 5){
   k = min_len
 }
 
-#train motif pHMM
+#train motif pHMM ----
 motif.PHMM <- derivePHMM(motif_train, k= k ,residues = alphabet, pseudocounts = "Laplace", refine = "BaumWelch")
 
-#predict on a set of songs
+#simulate null values using training sequences ----
+train_songs = bird_dat$note.seq[5:10]
 
-#loop over all songs
-song_scores = list()
-for(s in 1:length(songs)){
+
+nsim = 1000
+null_scores = list()
+for(i in 1:nsim){
+  #every round of simulation, we scramble a song at random
+  sam_song = sample(train_songs, size = 1)
+  #split into characters
+  temp_song = unlist(string_split(sam_song))
+  scram_song = sample(temp_song, replace = F)
+  #sliding windows on the scrambled song
+  
   #set width of window
   w = motif.PHMM$size
-  test_song = unlist(string_split(songs[s]))
+  nwins = length(scram_song) - w 
+  #store scores
+  pos_scores = rep(NA, nwins)
+  
+  #slide across
+  for(k in 1:nwins){
+    #slice kmer from test_song
+    kmer = string_slice(s = scram_song, start = k, end = k + w )
+    #get score under random model
+    random_score = kmer_bprob(kmer = kmer, background = bpdf, log_prob = T)
+    #get path from scrambled song
+    path = Viterbi(motif.PHMM, kmer)
+    pos_scores[k] = path$score-random_score
+  }
+  null_scores[[i]] = pos_scores
+}
+
+ns = unlist(null_scores)
+summary(ns)
+
+#predict on a set of songs----
+
+#loop over all songs
+test_songs = setdiff(songs, train_songs)
+song_scores = list()
+for(s in 1:length(test_songs)){
+  #set width of window
+  w = motif.PHMM$size
+  test_song = unlist(string_split(test_songs[s]))
   #implement sliding window
   nwins = length(test_song) - w 
   #store scores
@@ -109,6 +146,50 @@ for(s in 1:length(songs)){
   }
   song_scores[[s]] = pos_scores
 }
+
+#plotting results ----
+
+song_scores
+#get cutoff for 0.95
+sum(10.85>ns)/length(ns)
+cutoff = 10.85
+
+#turn scores into datasets
+test_scores = lapply(song_scores, function(d){
+  tibble::tibble(score = d, position = seq_along(d))
+})
+
+motif_plot = list()
+motif_plot[[1]] = ggplot(test_scores[[1]], aes(x = position, y = score)) +
+  geom_point() +
+  #add cutoff line
+  geom_hline(yintercept = cutoff, col = "orangered") +
+  #add lines for motifs
+  geom_vline(xintercept = c(9,19,27), col = "blue") 
+
+motif_plot[[2]]= ggplot(test_scores[[2]], aes(x = position, y = score)) +
+  geom_point() +
+  #add cutoff line
+  geom_hline(yintercept = cutoff, col = "orangered") +
+  #add lines for motifs
+  geom_vline(xintercept = c(7,15,23), col = "blue") 
+
+motif_plot[[3]] = ggplot(test_scores[[3]], aes(x = position, y = score)) +
+  geom_point() +
+  #add cutoff line
+  geom_hline(yintercept = cutoff, col = "orangered") +
+  #add lines for motifs
+  geom_vline(xintercept = c(7,15,23,31), col = "blue") 
+
+motif_plot[[4]] = ggplot(test_scores[[4]], aes(x = position, y = score)) +
+  geom_point() +
+  #add cutoff line
+  geom_hline(yintercept = cutoff, col = "orangered") +
+  #add lines for motifs
+  geom_vline(xintercept = c(9,17), col = "blue") 
+
+mp = ggpubr::ggarrange(plotlist = motif_plot, ncol = 2, nrow = 2)
+ggsave(mp, filename = "./results/motif_detection/motif_res.png")
 
 #plot song 1 scores
 song1 = tibble::tibble(score = song_scores[[1]], pos = seq(length(song_scores[[1]])))

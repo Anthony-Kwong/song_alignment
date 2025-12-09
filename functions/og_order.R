@@ -41,8 +41,11 @@ og_order <- function(align_mat, song_seqs) {
 
 #tests 
 
-song_seqs = c("ACCBC", "ABBA", "ABBA")
-A = t(matrix(c("A","B","B","A","-", "A", "C", "C", "B", "C", "A","B","B","A","-"), ncol = 3))
-output = og_order(align_mat = A, song_seqs = song_seqs)
-testthat::expect_equal(A[c(2,1,1),], output)
+testthat::test_that("",{
+  song_seqs = c("ACCBC", "ABBA", "ABBA")
+  A = t(matrix(c("A","B","B","A","-", "A", "C", "C", "B", "C", "A","B","B","A","-"), ncol = 3))
+  output = og_order(align_mat = A, song_seqs = song_seqs)
+  testthat::expect_equal(A[c(2,1,1),], output)
+})
+
 

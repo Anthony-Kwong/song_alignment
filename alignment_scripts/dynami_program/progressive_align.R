@@ -117,43 +117,60 @@ progressive_align <- function(S, match = 2, mismatch = -1, gap = -1){
   return(aln_mat)
 }
 
+#Function for testing output is valid. I.e. every string in the alignment came from the original dataset,
+#and every string is the dataset is present in alignment
+test_alignment <- function(aligned_matrix, input_sequences) {
+  
+  # Remove gaps from every row in the aligned matrix
+  stripped <- apply(aligned_matrix, 1, function(row) paste(row[row != "-"], collapse=""))
+  
+  # Check that all stripped sequences are in original set
+  all_in_original <- all(stripped %in% input_sequences)
+  
+  # Check that counts match — no repeats, no losses
+  same_set <- setequal(stripped, input_sequences)
+  
+  # Output results
+  list(
+    stripped_sequences = stripped,
+    are_valid_sequences = all_in_original,
+    set_matches_original = same_set
+  )
+}
+
 testthat::test_that("",{
   #we will only check that the output is valid
   
   input_sequences = c("ABBACC", "CCABBAD", "CABBCA")
-  output = progressive_align(S)
+  output = progressive_align(input_sequences)
   
-  # Remove gaps from every row in the aligned matrix
-  stripped <- apply(output, 1, function(row) paste(row[row != "-"], collapse=""))
-  
-  # Check that all stripped sequences are in original set
-  all_in_original <- all(stripped %in% input_sequences)
-  testthat::expect_equal(all_in_original, T)
-  
-  # Check that counts match — no repeats, no losses
-  same_set <- setequal(stripped, input_sequences)
-  testthat::expect_equal(same_set, T)
+  test = test_alignment(aligned_matrix = output, input_sequences = input_sequences)
+  testthat::expect_equal(test$are_valid_sequences, TRUE)
+  testthat::expect_equal(test$set_matches_original, TRUE)
+  # # Remove gaps from every row in the aligned matrix
+  # stripped <- apply(output, 1, function(row) paste(row[row != "-"], collapse=""))
+  # 
+  # # Check that all stripped sequences are in original set
+  # all_in_original <- all(stripped %in% input_sequences)
+  # testthat::expect_equal(all_in_original, T)
+  # 
+  # # Check that counts match — no repeats, no losses
+  # same_set <- setequal(stripped, input_sequences)
+  # testthat::expect_equal(same_set, T)
 })
 
-# #testing output is valid
-# test_alignment <- function(aligned_matrix, input_sequences) {
-#   
-#   # Remove gaps from every row in the aligned matrix
-#   stripped <- apply(aligned_matrix, 1, function(row) paste(row[row != "-"], collapse=""))
-#   
-#   # Check that all stripped sequences are in original set
-#   all_in_original <- all(stripped %in% input_sequences)
-#   
-#   # Check that counts match — no repeats, no losses
-#   same_set <- setequal(stripped, input_sequences)
-#   
-#   # Output results
-#   list(
-#     stripped_sequences = stripped,
-#     are_valid_sequences = all_in_original,
-#     set_matches_original = same_set
-#   )
-# }
+testthat::test_that("",{
+  input_sequences = c("ABBAAAABBBBABBABABABABABABABABAB","BBBBAAAABBBBABBABABABABAB",                   
+                      "ABBBAAAABBBBABBABABABABABABABABAB" ,"DBBBBAAAABBBBABABABABABABABABAB",          
+                      "ABBBAAAAABBBBABBABABABABABAB" ,"BBBAAAAABBBBABBABABABABABABABAB",         
+                      "BBBBAAAABBBBBABBABABABABABABABABAB","ABBBBAAAAABBBBBABBABABABABABABABAB") 
+  output = progressive_align(input_sequences)
+  
+  test = test_alignment(aligned_matrix = output, input_sequences = input_sequences)
+  testthat::expect_equal(test$are_valid_sequences, TRUE)
+  testthat::expect_equal(test$set_matches_original, TRUE)
+})
+
 
 # a = bird_songs %>%
 #   dplyr::filter(Line == "Pink")
