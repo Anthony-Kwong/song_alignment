@@ -331,6 +331,93 @@ pa_robust = ggplot(cleaned_dp, aes(x = match, y = mismatch, fill = score_scaled)
 
 ggsave(plot = pa_robust, filename = "./results/msa_scores/pa_robust.png")
 
+#plotting select alignments side by side ----
+
+library(ggplot2)
+library(ggmsa)
+
+#turquoise comparison
+
+#pa 1,1,-1
+# pHMM, with λ = 0 and maxscale = 1.5
+
+zero_margin <- theme(plot.margin = margin(0, 0, 0, 0))
+strip_theme <- theme(
+  strip.background = element_blank(),
+  strip.placement = "outside",
+  strip.text = element_text(margin = margin(0, 0, 0, 0))
+)
+
+pa_tur = list.files("./results/fasta/robust_test/dynam_prog/")[57]
+phmm_tur = list.files("./results/fasta/robust_test/pHMM/")[89]
+
+tur1 = ggmsa(paste("./results/fasta/robust_test/dynam_prog/",pa_tur,sep=""), color = "LETTER", seq_name = F, char_width = 0.4) 
+tur2 = ggmsa(paste("./results/fasta/robust_test/pHMM/",phmm_tur,sep=""), color = "LETTER", seq_name = F, char_width = 0.4) 
+
+library(patchwork)
+tur_plot = tur1  + tur2  + plot_layout(ncol = 2)
+ggsave(tur_plot, filename = "./results/alignment_plots/comparison/tur_comp.png", width = 12, height = 8, dpi = 500)
+
+#
+
+#
+#white
+
+#match score of 1, mismatch of -1 and gap of -2
+#$\lambda = 0$ and maxscale $= 1.25$
+
+pa_white = list.files("./results/fasta/robust_test/dynam_prog/")[66]
+phmm_white = list.files("./results/fasta/robust_test/pHMM/")[97]
+
+white1 = ggmsa(paste("./results/fasta/robust_test/dynam_prog/",pa_white,sep=""), color = "LETTER", seq_name = F, char_width = 0.4) +
+  scale_x_continuous(expand = c(0,0)) +
+  scale_y_continuous(expand = c(0,0)) +
+  theme_minimal(base_size = 10) +
+  theme(
+    plot.margin = unit(c(0,0,0,0), "cm"),  # remove extra margins
+    axis.text.x = element_text(size = 4, angle = 0),
+    axis.text.y = element_text(size = 4),
+    axis.title = element_blank(),           # remove axis titles
+    panel.grid = element_blank()            # remove grid
+  )
+white2 = ggmsa(paste("./results/fasta/robust_test/pHMM/",phmm_white,sep=""), color = "LETTER", seq_name = F, char_width = 0.4) +
+  scale_x_continuous(expand = c(0,0)) +
+  scale_y_continuous(expand = c(0,0)) +
+  theme_minimal(base_size = 10) +
+  theme(
+    plot.margin = unit(c(0,0,0,0), "cm"),  # remove extra margins
+    axis.text.x = element_text(size = 4, angle = 0),
+    axis.text.y = element_text(size = 4),
+    axis.title = element_blank(),           # remove axis titles
+    panel.grid = element_blank()            # remove grid
+  )
+
+white_plot = white1 + white2 + plot_layout(ncol = 2)
+ggsave(white_plot, filename = "./results/alignment_plots/comparison/white_comp.png", units = "in", dpi = 500)
+
+#pink
+
+#match score of 2, mismatch of -1 and gap of -2
+#$\lambda = 0$ and maxscale $= 1.5$
+  
+pa_pink = list.files("./results/fasta/robust_test/dynam_prog/")[54]
+phmm_pink = list.files("./results/fasta/robust_test/pHMM/")[72]
+
+pink1 = ggmsa(paste("./results/fasta/robust_test/dynam_prog/",pa_pink,sep=""), color = "LETTER", seq_name = F, char_width = 0.4) 
+pink2 = ggmsa(paste("./results/fasta/robust_test/pHMM/",phmm_pink,sep=""), color = "LETTER", seq_name = F, char_width = 0.4) 
+
+pink_plot = pink1 + pink2 + plot_layout(ncol = 2)
+ggsave(pink_plot, filename = "./results/alignment_plots/comparison/pink_comp.png", width = 12, height = 8, units = "in", dpi = 500)
+
+
+# fastas = list.files("./results/fasta/robust_test/pHMM/")
+# for(i in 1:length(fastas)){
+#   fname = paste("./results/fasta/robust_test/",fastas[i], sep ="")
+#   plot = ggmsa(fname, color = "LETTER", seq_name = TRUE, char_width = 0.2) + geom_msaBar() 
+#   plotname = paste("./results/fasta/robust_test/plot/",fastas[i],".png", sep = "")
+#   ggsave(plot, file = plotname)
+# }
+
 #old code below----
 
 #investigate robustness of alignments to different parameters
