@@ -191,7 +191,7 @@ gibbs_aligner_global <- function(S, w, iter) {
   return(out)
 }
 
-#example
+#examples
 S = c("XABBA", "XXABBA", "ABBAX")
 gibbs_aligner_global(S, w = 4, iter = 10)
 
@@ -199,7 +199,7 @@ data = c("ABBACC", "BBABBA","CABBA")
 output = gibbs_aligner_global(data, w = 4, iter = 10)
 
 data = c("AAABBACC", "CCBBABBA","CABBA")
-output = gibbs_aligner_full(data, w = 4, iter = 500)
+output = gibbs_aligner_global(data, w = 4, iter = 500)
 
 data = c("ABBACCAA", "GGBBABBAG","CABBA", "GCAKCAABBTX")
 output = gibbs_aligner_global(data, w = 4, iter = 10)
