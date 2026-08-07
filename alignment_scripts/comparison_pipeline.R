@@ -183,5 +183,66 @@ readr::write_csv(final_dp_res, file = "./results/msa_scores/dp_scores.csv")
 
 source("./alignment_scripts/sample_songs.R")
 
+#one round of lineage pair sampling
+paired_data = all_lineage_pairs(bird_songs, line_col = "Line")
 
+##phmm ----
+
+#adapt code from intra-case, less processing required, make it common for all 3 methods?
+
+#loop for every pair and generate an alignment
+msa_scores = list()
+for(i in 1:length(paired_data)){
+  print(i)
+  #filter for birds of the one lineage
+  filtered_bird = bird_songs %>%
+    dplyr::filter( Line == lines[i])
+  
+  #get Bird IDs for labeling alignment
+  IDs = filtered_bird$Bird.ID
+  bIDs = paste0(IDs,"_", ave(IDs, IDs, FUN = seq_along))
+  
+  #get note sequences as long strings
+  bird_songsseqs = filtered_bird$note.seq
+  
+  #get sequences in split strings
+  bird_songs_split = lapply(bird_songsseqs, function(s){strsplit(s, "")[[1]]})
+  bird_songs_split <- bird_songs_split[order(lengths(bird_songs_split),decreasing = T)]
+  
+  #get the alphabet
+  comb = paste(bird_songsseqs, collapse = "")
+  letters = unique(strsplit(comb, "")[[1]])
+  
+  #get median sequence length (for scaling the max number of modules)
+  min_song_len = min(sapply(bird_songs_split,length))
+  
+  #fit model for different lambda
+  
+  line_scores = rep(NA, nrow(tune_params))
+  for(k in 1:nrow(tune_params)){
+    #get set of parameters to fit pHMM
+    params = tune_params[k,]
+    #fit model
+    song.PHMM <- derivePHMM(bird_songs_split, residues = letters, pseudocounts = "Laplace", refine = "BaumWelch",
+                            inserts = "map", lambda = params$lambda, maxsize = ceiling(min_song_len*params$max_scale),
+                            progressive = FALSE, maxiter = 100)
+    
+    alignment = align(bird_songs_split, model = song.PHMM, seqweights = NULL, residues = letters)
+    #retain original order as in bird_songseqs
+    A = og_order(align_mat = alignment, song_seqs = bird_songsseqs)
+    #compute min entropy score
+    line_scores[k] = min_entropy(A)
+    #save alignment as a fasta file
+    alignment_fasta = bio3d::as.fasta(A, id = bIDs)
+    fname = paste("./results/fasta/robust_test/pHMM/",lines[i],"lambda_",params$lambda,
+                  "_maxscale_",params$max,".fasta",sep="")
+    print(fname)
+    bio3d::write.fasta(alignment_fasta, file = fname)
+  }
+  #save line results
+  msa_scores[[i]] = tibble::tibble(tune_params, score = line_scores)
+}
+
+msa_scores = do.call(rbind, msa_scores)
+readr::write_csv(msa_scores, file = "./results/msa_scores/phmm_scores.csv")
 
