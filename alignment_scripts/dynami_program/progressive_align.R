@@ -30,7 +30,7 @@ progressive_align <- function(S, match = 2, mismatch = -1, gap = -1){
     
     if(is.null(aln_mat)) {
       # First iteration — find best pair
-      D <- compute_distance_matrix(sequences, gap, mismatch, match, method = method)
+      D <- compute_distance_matrix(sequences, gap, mismatch, match)
       #get index of the highest scoring pair, i j
       ij <- which(D == max(D), arr.ind=TRUE)[1,]
       #get indices of seqs i,j
@@ -172,8 +172,3 @@ testthat::test_that("",{
 })
 
 
-# a = bird_songs %>%
-#   dplyr::filter(Line == "Pink")
-# asongs = a$note.seq
-# 
-# k = progressive_align(asongs[1:10])

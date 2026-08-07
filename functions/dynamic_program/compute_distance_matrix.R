@@ -45,7 +45,7 @@ testthat::test_that("",{
   output = compute_distance_matrix(S, match = 2, gap = -1, mismatch = -1,method = "NW")
   
   #checked scores manually
-  D <- matrix(-Inf, n, n)
+  D <- matrix(-Inf, 3, 3)
   D[1,2] = 4
   D[1,3] = 5
   D[2,3] = 9
