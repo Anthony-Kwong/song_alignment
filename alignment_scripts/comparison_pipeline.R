@@ -70,13 +70,13 @@ for(i in 1:length(lines)){
     line_scores[k] = min_entropy(A)
     #save alignment as a fasta file
     alignment_fasta = bio3d::as.fasta(A, id = bIDs)
-    fname = paste("./results/fasta/robust_test/pHMM/",lines[i],"lambda_",params$lambda,
+    fname = paste("./results/fasta/robust_test/pHMM/intra/",lines[i],"lambda_",params$lambda,
                   "_maxscale_",params$max,".fasta",sep="")
     print(fname)
     bio3d::write.fasta(alignment_fasta, file = fname)
   }
   #save line results
-  msa_scores[[i]] = tibble::tibble(tune_params, score = line_scores)
+  msa_scores[[i]] = tibble::tibble(tune_params, score = line_scores, comp = lines[i])
 }
 
 msa_scores = do.call(rbind, msa_scores)
@@ -110,7 +110,7 @@ for(i in 1:length(lines)){
     line_scores[k] = min_entropy(gibbs.model)
     #save alignment as a fasta file
     alignment_fasta = bio3d::as.fasta(gibbs.model, id = bIDs)
-    fname = paste("./results/fasta/robust_test/gibbs/",lines[i],"_wminus_",w_vals[k],".fasta",sep="")
+    fname = paste("./results/fasta/robust_test/gibbs/intra/",lines[i],"_wminus_",w_vals[k],".fasta",sep="")
     print(fname)
     bio3d::write.fasta(alignment_fasta, file = fname)
   }
@@ -160,7 +160,7 @@ for(i in 1:length(lines)){
     line_scores[k] = min_entropy(A)
     #save alignment as a fasta file
     alignment_fasta = bio3d::as.fasta(A)
-    fname = paste("./results/fasta/robust_test/dynam_prog/",lines[i],"_match_",params$match
+    fname = paste("./results/fasta/robust_test/dynam_prog/intra/",lines[i],"_match_",params$match
                   ,"_mismatch_", params$mismatch,"_gap_",params$gap ,".fasta",sep="")
     print(fname)
     bio3d::write.fasta(alignment_fasta, file = fname)
@@ -185,6 +185,9 @@ source("./alignment_scripts/sample_songs.R")
 
 #one round of lineage pair sampling
 paired_data = all_lineage_pairs(bird_songs, line_col = "Line")
+
+
+
 #set save to T for saving fastas files
 save_fasta = F
 
@@ -235,14 +238,16 @@ for(i in 1:length(paired_data)){
     if(save_fasta == T){
       #save alignment as a fasta file
       alignment_fasta = bio3d::as.fasta(A, id = bIDs)
-      fname = paste("./results/fasta/robust_test/pHMM/",lines[i],"lambda_",params$lambda,
+      pair_name = names(paired_data)[i]
+      fname = paste("./results/fasta/robust_test/pHMM/inter/",pair_name,"lambda_",params$lambda,
                     "_maxscale_",params$max,".fasta",sep="")
       print(fname)
       bio3d::write.fasta(alignment_fasta, file = fname)
     }
   }
+  pair_name = names(paired_data)[i]
   #save results over all pairs
-  intra_phmm_scores[[i]] = tibble::tibble(tune_params, score = phmm_scores, comp = names(paired_data)$i)
+  intra_phmm_scores[[i]] = tibble::tibble(tune_params, score = phmm_scores, comp = pair_name)
 }
 #save output
 intra_phmm_scores = do.call(rbind, intra_phmm_scores)
