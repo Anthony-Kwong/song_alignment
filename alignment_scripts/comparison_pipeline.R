@@ -54,7 +54,9 @@ for(i in 1:length(lines)){
   
   #fit model for different lambda
   
-  line_scores = rep(NA, nrow(tune_params))
+  # line_scores = rep(NA, nrow(tune_params))
+  # align_len = rep(NA, nrow(tune_params))
+  score_stats = list()
   for(k in 1:nrow(tune_params)){
     #get set of parameters to fit pHMM
     params = tune_params[k,]
@@ -67,7 +69,11 @@ for(i in 1:length(lines)){
     #retain original order as in bird_songseqs
     A = og_order(align_mat = alignment, song_seqs = bird_songsseqs)
     #compute min entropy score
-    line_scores[k] = min_entropy(A)
+    line_scores = min_entropy(A)
+    #get length
+    align_len = ncol(A)
+    #put stats together 
+    score_stats[[k]] = tibble::tibble(score = line_scores, length = align_len, norm_score = line_scores/align_len)
     #save alignment as a fasta file
     alignment_fasta = bio3d::as.fasta(A, id = bIDs)
     fname = paste("./results/fasta/robust_test/pHMM/intra/",lines[i],"lambda_",params$lambda,
@@ -76,13 +82,18 @@ for(i in 1:length(lines)){
     bio3d::write.fasta(alignment_fasta, file = fname)
   }
   #save line results
-  msa_scores[[i]] = tibble::tibble(tune_params, score = line_scores, comp = lines[i])
+  res = tibble::tibble(tune_params, comp = lines[i])
+  scores = do.call(rbind, score_stats)
+  msa_scores[[i]] = cbind(res, scores)
 }
 
 msa_scores = do.call(rbind, msa_scores)
 readr::write_csv(msa_scores, file = "./results/msa_scores/phmm_scores.csv")
 
 ##gibbs ----
+
+#tuning params
+w_minus = c(0,1,2,3)
 
 gibbs_scores = list()
 for(i in 1:length(lines)){
@@ -102,20 +113,28 @@ for(i in 1:length(lines)){
   min_len = min(sapply(bird_songsseqs, nchar))
   
   #fit model for different w
-  line_scores = rep(NA, length(w_vals))
-  for(k in 1:length(w_vals)){
+  score_stats = list()
+  for(k in 1:length(w_minus)){
     #fit model
-    gibbs.model <- gibbs_aligner_global(S = bird_songsseqs, w = min_len - w_vals[k], iter = 100)
-    #compute min entropy score
-    line_scores[k] = min_entropy(gibbs.model)
-    #save alignment as a fasta file
+    gibbs.model <- gibbs_aligner_global(S = bird_songsseqs, w = min_len - w_minus[k], iter = 100)
+    
+    #gather scores data
+    line_scores = min_entropy(gibbs.model)
+    align_len = ncol(gibbs.model)
+    score_stats[[k]] = tibble::tibble(score = line_scores, length = align_len, norm_score = line_scores/align_len)
+    
+    #save alignment as a fasta file for visualisation
     alignment_fasta = bio3d::as.fasta(gibbs.model, id = bIDs)
-    fname = paste("./results/fasta/robust_test/gibbs/intra/",lines[i],"_wminus_",w_vals[k],".fasta",sep="")
+    fname = paste("./results/fasta/robust_test/gibbs/intra/",lines[i],"_wminus_",w_minus[k],".fasta",sep="")
     print(fname)
     bio3d::write.fasta(alignment_fasta, file = fname)
   }
+  #gather score_stats
+  scores = do.call(rbind, score_stats)
+  res = tibble::tibble(wminus = w_minus, line = lines[i])
+  
   #save line results
-  gibbs_scores[[i]] = tibble::tibble(wminus = w_vals, score = line_scores, line = lines[i])
+  gibbs_scores[[i]] = cbind(res, scores)
 }
 gibbs_res = do.call(rbind, gibbs_scores)
 readr::write_csv(gibbs_res, file = "./results/msa_scores/gibbs_scores.csv")
@@ -147,17 +166,25 @@ for(i in 1:length(lines)){
   bird_songsseqs = filtered_bird$note.seq
   
   #fit model for different w
-  line_scores = rep(NA, nrow(tune_params))
+  score_stats = list()
   for(k in 1:nrow(tune_params)){
     params = tune_params[k,]
     #fit model
     dynam_model = progressive_align(S = bird_songsseqs, match = params$match, mismatch = params$mismatch, gap = params$gap)
+    
+    #reordering alignment mat for visualisation
+    
     #put strings back into original order
     A = og_order(align_mat = dynam_model, song_seqs = bird_songsseqs)
     #add back sequence names
     rownames(A) = bIDs
+    
     #compute min entropy score
-    line_scores[k] = min_entropy(A)
+    line_scores = min_entropy(A)
+    align_len = ncol(A)
+    score_stats[[k]] = tibble::tibble(score = line_scores, length = align_len, norm_score = line_scores/align_len)
+    
+    
     #save alignment as a fasta file
     alignment_fasta = bio3d::as.fasta(A)
     fname = paste("./results/fasta/robust_test/dynam_prog/intra/",lines[i],"_match_",params$match
@@ -165,16 +192,17 @@ for(i in 1:length(lines)){
     print(fname)
     bio3d::write.fasta(alignment_fasta, file = fname)
   }
+  
+  #gather score_stats
+  scores = do.call(rbind, score_stats)
+  res = tibble::tibble(tune_params, line = lines[i])
+  
   #save line results
-  dynam_scores[[i]] = tibble::tibble(tune_params, score = line_scores)
+  dynam_scores[[i]] = cbind(res, scores)
 }
 
-final_dp_res = list()
-for(i in 1:length(lines)){
-  final_dp_res[[i]] = tibble::tibble(dynam_scores[[i]], lineage = lines[i])
-}
 
-final_dp_res = do.call(rbind, final_dp_res)
+final_dp_res = do.call(rbind, dynam_scores)
 readr::write_csv(final_dp_res, file = "./results/msa_scores/dp_scores.csv")
 
 #inter-lineage scores ----
@@ -186,17 +214,18 @@ source("./alignment_scripts/sample_songs.R")
 #one round of lineage pair sampling
 paired_data = all_lineage_pairs(bird_songs, line_col = "Line")
 
-
-
 #set save to T for saving fastas files
 save_fasta = F
 
 ##phmm ----
 
-#adapt code from intra-case, less processing required, make it common for all 3 methods?
+#tuning parameters
+lambda = seq(from = 0, to = 100, by = 50)
+max_scale = c(1,1.25,1.5) #scale the max number of modules, by the longest length seq
+phmm_tune_params = expand.grid(lambda = lambda, max_scale = max_scale)
 
 #loop for every pair and generate an alignment
-intra_phmm_scores = list()
+inter_phmm_scores = list()
 for(i in 1:length(paired_data)){
   print(i)
   #get data for the run
@@ -219,10 +248,10 @@ for(i in 1:length(paired_data)){
   min_song_len = min(sapply(bird_songs_split,length))
   
   #fit model for different lambda
-  phmm_scores = rep(NA, nrow(tune_params))
-  for(k in 1:nrow(tune_params)){
+  score_stats = list()
+  for(k in 1:nrow(phmm_tune_params)){
     #get set of parameters to fit pHMM
-    params = tune_params[k,]
+    params = phmm_tune_params[k,]
     #fit model
     song.PHMM <- derivePHMM(bird_songs_split, residues = letters, pseudocounts = "Laplace", refine = "BaumWelch",
                             inserts = "map", lambda = params$lambda, maxsize = ceiling(min_song_len*params$max_scale),
@@ -231,25 +260,33 @@ for(i in 1:length(paired_data)){
     alignment = align(bird_songs_split, model = song.PHMM, seqweights = NULL, residues = letters)
     #retain original order as in bird_songseqs
     A = og_order(align_mat = alignment, song_seqs = bird_songsseqs)
+
     #compute min entropy score
-    phmm_scores[k] = min_entropy(A)
+    line_scores = min_entropy(A)
+    #get length
+    align_len = ncol(A)
+    #put stats together 
+    score_stats[[k]] = tibble::tibble(score = line_scores, length = align_len, norm_score = line_scores/align_len)
     
-    #option to save fastas
-    if(save_fasta == T){
-      #save alignment as a fasta file
-      alignment_fasta = bio3d::as.fasta(A, id = bIDs)
-      pair_name = names(paired_data)[i]
-      fname = paste("./results/fasta/robust_test/pHMM/inter/",pair_name,"lambda_",params$lambda,
-                    "_maxscale_",params$max,".fasta",sep="")
-      print(fname)
-      bio3d::write.fasta(alignment_fasta, file = fname)
-    }
+    # #option to save fastas
+    # if(save_fasta == T){
+    #   #save alignment as a fasta file
+    #   alignment_fasta = bio3d::as.fasta(A, id = bIDs)
+    #   pair_name = names(paired_data)[i]
+    #   fname = paste("./results/fasta/robust_test/pHMM/inter/",pair_name,"lambda_",params$lambda,
+    #                 "_maxscale_",params$max,".fasta",sep="")
+    #   print(fname)
+    #   bio3d::write.fasta(alignment_fasta, file = fname)
+    # }
   }
+  #collect score stats
+  scores = do.call(rbind, score_stats)
   pair_name = names(paired_data)[i]
+  res = tibble::tibble(phmm_tune_params, pair = pair_name)
   #save results over all pairs
-  intra_phmm_scores[[i]] = tibble::tibble(tune_params, score = phmm_scores, comp = pair_name)
+  inter_phmm_scores[[i]] = cbind(res, scores)
 }
 #save output
-intra_phmm_scores = do.call(rbind, intra_phmm_scores)
-readr::write_csv(msa_scores, file = "./results/msa_scores/phmm_scores.csv")
+inter_phmm_scores = do.call(rbind, inter_phmm_scores)
+readr::write_csv(msa_scores, file = "./results/msa_scores/inter_phmm_scores.csv")
 

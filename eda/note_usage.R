@@ -15,19 +15,6 @@ note.prop.mat <- diag( 1.0 / notes.per.bird ) %*% note.count.mat
 rownames( note.prop.mat ) <- rownames( note.count.mat ) # Names seem to get lost
 rowSums(note.prop.mat ) # Should all be 1.0
 
-#produce heatmap of note usage, where the cells are colored by the note proportion, birds
-#are colored by their social lineage
-# library(gplots)
-# heatmap.2( 
-#   t(note.prop.mat), 
-#   col=terrain.colors(256), trace="none",
-#   #main="Proportion of notes recorded (per bird)",
-#   key.title="Key", key.xlab="Proportion of notes",
-#   margins=c(4,7), 
-#   colCol = x_colors,
-#   dendrogram = "none"
-# )
-
 #want to put social lineages together....
 
 meta.data=read.csv("~/Dropbox (The University of Manchester)/FINAL FILES/20210303/Files for Anthony/JavaSparrow_Metadata.csv")
@@ -172,7 +159,13 @@ library(ggplot2)
 
 dur_plot = ggplot(len_tab, aes(x = Line, y = note_count)) +
   geom_boxplot() +
-  labs(x = "Social lineage", y = "song length")
+  labs(x = "Social lineage", y = "Song length") +
+  theme_classic(base_size = 12) +
+  theme(
+    axis.title = element_text(size = 14),
+    axis.text = element_text(size = 11),
+    axis.text.x = element_text(angle = 45, hjust = 1)
+  )
 
 ggsave(dur_plot, file = "./results/eda/songlen_boxplot.png")
 

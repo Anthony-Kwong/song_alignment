@@ -8,9 +8,7 @@
 
 #Compute ratio of Viterbi path score/random model (from background probs).
 
-#Plot ration across song. 
-
-#Do cross validation. 5 fold.
+#Plot ratio across song. 
 
 #load libs
 pacman::p_load(magrittr, aphid)
@@ -71,7 +69,6 @@ bpdf = bck_pdf(songs)
 
 #process motif strings
 motif_train = string_split(js0300_motifs[1:17]) #train on motifs from recordings 6 to 10
-#set k parameter (to enable fitting in derivepHMM)
 min_len = min(sapply(motif_train, length))
 k = 0
 if(min_len > 5){
@@ -84,6 +81,8 @@ if(min_len > 5){
 motif.PHMM <- derivePHMM(motif_train, k= k ,residues = alphabet, pseudocounts = "Laplace", refine = "BaumWelch")
 
 #simulate null values using training sequences ----
+
+#take the training sequences and scramble the letters (within songs), without replacement
 train_songs = bird_dat$note.seq[5:10]
 
 
@@ -142,6 +141,7 @@ for(s in 1:length(test_songs)){
     random_score = kmer_bprob(kmer = kmer, background = bpdf, log_prob = T)
     #get path
     path = Viterbi(motif.PHMM, kmer)
+    #compute log ratio
     pos_scores[i] = path$score-random_score
   }
   song_scores[[s]] = pos_scores
