@@ -69,7 +69,7 @@ run_pair <- function(i) {
     line_scores <- min_entropy(A)
     align_len <- ncol(A)
     
-    score_stats[[k]] <- tibble(
+    score_stats[[k]] <- tibble::tibble(
       score = line_scores,
       length = align_len,
       norm_score = line_scores / align_len
@@ -86,7 +86,7 @@ run_pair <- function(i) {
   pair_name <- names(paired_data)[i]
   
   # Parameter information
-  res <- tibble(
+  res <- tibble::tibble(
     pa_tune_params,
     pair = pair_name
   )
@@ -105,7 +105,7 @@ run_pair <- function(i) {
 # If your machine has fewer than ~12 logical CPU cores,
 # consider using 6 instead.
 
-cl <- makeCluster(2)
+cl <- makeCluster(8)
 
 
 ## ------------------------------------------------------------
@@ -122,6 +122,21 @@ clusterEvalQ(cl, {
   source("./alignment_scripts/dynami_program/progressive_align.R")
   source("./functions/get_column_stats.R")
   source("./functions/min_entropy.R")
+})
+
+#checks
+
+clusterEvalQ(cl, {
+  c(
+    tibble = requireNamespace("tibble", quietly = TRUE),
+    progressive_align = exists("progressive_align"),
+    needleman = exists("needleman"),
+    min_entropy = exists("min_entropy")
+  )
+})
+
+clusterEvalQ(cl, {
+  exists("tibble")
 })
 
 
@@ -153,6 +168,8 @@ test_results <- parLapply(
 )
 
 cat("Test completed.\n")
+
+#8 workers check
 
 
 ## ------------------------------------------------------------
