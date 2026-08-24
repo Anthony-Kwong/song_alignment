@@ -214,6 +214,16 @@ source("./alignment_scripts/sample_songs.R")
 #one round of lineage pair sampling
 paired_data = all_lineage_pairs(bird_songs, line_col = "Line")
 
+#number of sampling iterations per lineage pair
+set.seed(1066)
+nsim = 5
+paired_data <- unlist(
+  lapply(1:nsim, function(i) {
+    all_lineage_pairs(bird_songs, line_col = "Line")
+  }),
+  recursive = FALSE
+)
+
 #set save to T for saving fastas files
 save_fasta = F
 
@@ -288,7 +298,7 @@ for(i in 1:length(paired_data)){
 }
 #save output
 inter_phmm_scores = do.call(rbind, inter_phmm_scores)
-readr::write_csv(msa_scores, file = "./results/msa_scores/inter_phmm_scores.csv")
+readr::write_csv(inter_phmm_scores, file = "./results/msa_scores/inter_phmm_scores.csv")
 
 ##gibbs ----
 
@@ -361,7 +371,7 @@ for(i in 1:length(paired_data)){
   #fit model for different w
   score_stats = list()
   for(k in 1:nrow(pa_tune_params)){
-    params = tune_params[k,]
+    params = pa_tune_params[k,]
     #fit model
     dynam_model = progressive_align(S = bird_songsseqs, match = params$match, mismatch = params$mismatch, gap = params$gap)
     
