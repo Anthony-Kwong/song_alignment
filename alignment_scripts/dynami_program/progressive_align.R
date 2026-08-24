@@ -107,7 +107,7 @@ progressive_align <- function(S, match = 2, mismatch = -1, gap = -1){
       
       # Append the new aligned sequence
       aln_mat <- rbind(aln_mat, seq_aln)
-      print(paste("added a seq",counter))
+      #print(paste("added a seq",counter))
       counter = counter + 1
       
       # Remove it from the pool
