@@ -170,6 +170,13 @@ test_results <- parLapply(
 cat("Test completed.\n")
 
 #8 workers check
+system.time({
+  test_results <- parLapply(
+    cl,
+    1:8,
+    run_pair
+  )
+})
 
 
 ## ------------------------------------------------------------
