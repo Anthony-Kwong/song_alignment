@@ -49,13 +49,9 @@ for(i in 1:length(lines)){
   comb = paste(bird_songsseqs, collapse = "")
   letters = unique(strsplit(comb, "")[[1]])
   
-  #get median sequence length (for scaling the max number of modules)
+  #get minimum sequence length (for scaling the max number of modules)
   min_song_len = min(sapply(bird_songs_split,length))
   
-  #fit model for different lambda
-  
-  # line_scores = rep(NA, nrow(tune_params))
-  # align_len = rep(NA, nrow(tune_params))
   score_stats = list()
   for(k in 1:nrow(tune_params)){
     #get set of parameters to fit pHMM
@@ -254,7 +250,7 @@ for(i in 1:length(paired_data)){
   comb = paste(bird_songsseqs, collapse = "")
   letters = unique(strsplit(comb, "")[[1]])
   
-  #get median sequence length (for scaling the max number of modules)
+  #get minimum sequence length (for scaling the max number of modules)
   min_song_len = min(sapply(bird_songs_split,length))
   
   #fit model for different lambda

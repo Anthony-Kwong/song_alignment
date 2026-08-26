@@ -2,6 +2,8 @@
 
 #library
 library(dplyr)
+library(ggplot2)
+
 
 #load inter-lineage results
 inter_phmm = readr::read_csv("./results/msa_scores/inter_phmm_scores.csv")
@@ -105,3 +107,70 @@ progressive_results <- bind_rows(
     .groups = "drop"
   )
 
+#plots ----
+
+p_gibbs <- ggplot(gibbs_results,
+                  aes(x = wminus, y = cohen_d)) +
+  geom_line() +
+  geom_point(size = 3) +
+  scale_x_continuous(breaks = unique(gibbs_results$wminus)) +
+  labs(
+    x = "w",
+    y = "Cohen's d"
+  ) +
+  theme_classic(base_size = 12)
+
+p_gibbs
+
+# -------------------------
+# PHMM
+# -------------------------
+
+p_phmm <- ggplot(
+  phmm_results,
+  aes(x = max_scale, y = cohen_d,
+      group = lambda, linetype = factor(lambda))
+) +
+  geom_line() +
+  geom_point(size = 3) +
+  scale_x_continuous(
+    breaks = unique(phmm_results$max_scale)
+  ) +
+  labs(
+    x = "Maximum model size (× minimum song length)",
+    y = "Cohen's d",
+    linetype = expression(lambda)
+  ) +
+  theme_classic(base_size = 12)
+
+p_phmm
+
+#progressive
+progressive_results <- progressive_results %>%
+  arrange(match, mismatch, gap) %>%
+  mutate(
+    params = factor(
+      paste0("M", match, ", X", mismatch, ", G", gap),
+      levels = paste0(
+        "M", match,
+        ", X", mismatch,
+        ", G", gap
+      )
+    )
+  )
+
+p_progressive <- ggplot(
+  progressive_results,
+  aes(x = params, y = cohen_d)
+) +
+  geom_point(size = 3) +
+  labs(
+    x = "Scoring parameters",
+    y = "Cohen's d"
+  ) +
+  theme_classic(base_size = 12) +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1)
+  )
+
+p_progressive
