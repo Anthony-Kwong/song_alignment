@@ -89,7 +89,7 @@ readr::write_csv(msa_scores, file = "./results/msa_scores/phmm_scores.csv")
 ##gibbs ----
 
 #tuning params
-w_minus = c(0,1,2,3)
+w_minus = c(0,1,2,3,4,5)
 
 gibbs_scores = list()
 for(i in 1:length(lines)){
@@ -120,10 +120,10 @@ for(i in 1:length(lines)){
     score_stats[[k]] = tibble::tibble(score = line_scores, length = align_len, norm_score = line_scores/align_len)
     
     #save alignment as a fasta file for visualisation
-    alignment_fasta = bio3d::as.fasta(gibbs.model, id = bIDs)
-    fname = paste("./results/fasta/robust_test/gibbs/intra/",lines[i],"_wminus_",w_minus[k],".fasta",sep="")
-    print(fname)
-    bio3d::write.fasta(alignment_fasta, file = fname)
+    # alignment_fasta = bio3d::as.fasta(gibbs.model, id = bIDs)
+    # fname = paste("./results/fasta/robust_test/gibbs/intra/",lines[i],"_wminus_",w_minus[k],".fasta",sep="")
+    # print(fname)
+    # bio3d::write.fasta(alignment_fasta, file = fname)
   }
   #gather score_stats
   scores = do.call(rbind, score_stats)
@@ -299,7 +299,7 @@ readr::write_csv(inter_phmm_scores, file = "./results/msa_scores/inter_phmm_scor
 ##gibbs ----
 
 #tuning params
-w_minus = c(0,1,2,3)
+w_minus = c(0,1,2,3,4,5)
 
 gibbs_scores = list()
 for(i in 1:length(paired_data)){
